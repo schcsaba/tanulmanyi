@@ -1,0 +1,21 @@
+{% extends "tanulmanyi/home.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+
+{% if visszajelzes %}
+
+<h3>{{ visszajelzes }}</h3>
+
+{% else %}
+
+<h1>{{ cim }}</h1>
+
+<hr>
+
+<iframe src="https://docs.google.com/spreadsheets/d/{{ naptar }}/pubhtml?widget=false&amp;headers=false" width="1100" height="1500"></iframe>
+
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "tanulmanyi/home.html" %}
+
+{% block title %}{% if title %}{{ title }}{% else %}Szabályzatok{% endif %}{% endblock %}
+
+{% block content %}
+
+{% if visszajelzes %}
+
+<h3>{{ visszajelzes }}</h3>
+
+{% else %}
+
+<h2>A Főiskola működésére vonatkozó általánosan érvényes és aktuálisan hatályos szabályzatok</h2>
+
+<ul>
+{% for szabalyzat in szabalyzatok %}
+    {% if szabalyzat.csak_oktatoknak %}
+        {% if is_oktato %}
+            <li><a class="text-info" href="/szabalyzatok/letoltes/{{ szabalyzat.id }}" download>{{ szabalyzat.nev }}</a></li>
+        {% endif %}
+    {% else %}
+        <li><a class="text-info" href="/szabalyzatok/letoltes/{{ szabalyzat.id }}" download>{{ szabalyzat.nev }}</a></li>
+    {% endif %}
+{% endfor %}
+</ul>
+
+{% endif %}
+
+{% endblock %}

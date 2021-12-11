@@ -1,0 +1,54 @@
+{% extends "tanulmanyi/home.html" %}
+
+{% block title %}Mintatantervek{% endblock %}
+
+{% block content %}
+
+<h1>Mintatantervek</h1>
+
+<hr>
+
+<p>A mintatantervek nevében a tanév (pl. 2014/15) azt jelzi, hogy az adott mintatanterv abban a tanévben lett bevezetve és az akkor vagy az azt követően beiratkozott hallgatók haladnak tanulmányaikban az adott mintatanterv szerint.</p>
+
+<ul>
+    {% for kepzes in kepzesek %}
+        <li><h4>Képzés: {{ kepzes }}</h4></li>
+        <ul>
+        {% for szak in kepzes.szakok %}
+            <li><h5>Szak: {{ szak.nev }}</h5></li>
+            <ul>
+                {% for mintatanterv in szak.mintatantervek %}
+                    <li><h5><a class="text-info" href="{{ mintatanterv.get_absolute_url }}">{{ mintatanterv }}</a></h5></li>
+                {% endfor %}
+            </ul>
+            {% if szak.szakiranyok %}
+                <h5>A szak szakirányai:</h5>
+                <ul>
+                    {% for szaki in szak.szakiranyok %}
+                        <li><h5>Szakirány: {{ szaki.nev }}</h5></li>
+                        <ul>
+                            {% for mintatanterv in szaki.mintatantervek %}
+                                <li><h5><a class="text-info" href="{{ mintatanterv.get_absolute_url }}">{{ mintatanterv }}</a></h5></li>
+                            {% endfor %}
+                        </ul>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            {% if szak.specializaciok %}
+                <h5>A szak specializációi:</h5>
+                <ul>
+                    {% for spec in szak.specializaciok %}
+                        <li><h5>Specializáció: {{ spec.nev }}</h5></li>
+                        <ul>
+                            {% for mintatanterv in spec.mintatantervek %}
+                                <li><h5><a class="text-info" href="{{ mintatanterv.get_absolute_url }}">{{ mintatanterv }}</a></h5></li>
+                            {% endfor %}
+                        </ul>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endfor %}
+        </ul>
+    {% endfor %}
+</ul>
+{% endblock %}

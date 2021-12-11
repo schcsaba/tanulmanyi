@@ -1,0 +1,116 @@
+{% extends "tanulmanyi/home.html" %}
+
+{% load mintatanterv_extras %}
+
+{% block title %}Mintatantervek | {{ mintatanterv.kod }}{% endblock %}
+
+{% block content %}
+
+<h1>Mintatanterv: {{ mintatanterv.nev }}</h1>
+
+<hr>
+
+<p>A táblázatban a tárgykódra kattintva jeleníthetők meg az adott tárgy kurzusai, újra rákattintva pedig ismét elrejthetők. Az Előfeltétel oszlopban a <strong>vastagon</strong> szedett tárgy(ak) erős előfeltétele(i) a sor elején szereplő tárgynak.</p>
+<table class="table table-bordered">
+    <tr class="text-center">
+        {% for felev in felevek %}
+            <td><a class="text-info" href="#felev{{ felev }}">{{ felev }}. félév</a></td>
+        {% endfor %}
+    </tr>
+</table>
+{% for felev in felevek %}
+    <table class="table table-sm table-bordered">
+        <thead>
+            <tr class="text-center table-danger">
+                <td colspan="8"><h3><strong><a name="felev{{ felev }}"></a>{{ felev }}. félév  ({{ felev_kreditek|dictionary_lookup:felev }} + {{ felev_nem_kot_kreditek|dictionary_lookup:felev }} kredit)</strong></h3></td>
+            </tr>
+        </thead>
+        <thead>
+            <tr class="table-success">
+                <th><u>Tárgykód</u></th>
+                <th><u>Tárgynév</u></th>
+                <th><u>Előfeltétel</u></th>
+                <th><u>Mely tárgy(ak)nak előfeltétele?</u></th>
+                <th><u>Kredit</u></th>
+                <th><u>Kurzustípus</u></th>
+                <th><u>Követelmény</u></th>
+                <th><u>Felvétel típusa</u></th>
+            </tr>
+        </thead>
+        {% for mintatantervtargy in mintatantervtargyak %}
+            {% if mintatantervtargy.felev == felev %}
+                <tr {% if mintatantervtargy.felvetel_tipusa.id == 1 %}class="table-success"{% else %}class="table-warning"{% endif %}>
+                    <th><a class="text-info" data-toggle="collapse" href="#kurzusok{{ forloop.counter }}" aria-expanded="false" aria-controls="kurzusok{{ forloop.counter }}">{{ mintatantervtargy.targy.targykod }}</a></th>
+                    <th>{{ mintatantervtargy.targy.targynev }}<!-- <a href="{{ mintatantervtargy.targy.get_absolute_url }}"><small>Tantárgyleírás</small></a>--></th>
+                    <td>
+                        {% if mintatantervtargy.fotargymintatantervben.all.count > 0 %}
+                            {% for met in mintatantervtargy.fotargymintatantervben.all %}
+                                {% if met.eros_elofeltetel %}
+                                    <strong>{{ met.elofeltetel_targy }}</strong>{% if not forloop.last %}, {% endif %}
+                                {% else %}
+                                    {{ met.elofeltetel_targy }}{% if not forloop.last %}, {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            {% for mtet in mintatantervtargy.targy.fotargy.all %}
+                                {% if mtet.eros_elofeltetel %}
+                                    <strong>{{ mtet.elofeltetel_targy }}</strong>{% if not forloop.last %}, {% endif %}
+                                {% else %}
+                                    {{ mtet.elofeltetel_targy }}{% if not forloop.last %}, {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if mintatantervtargy.melytargyelofeltetele.all.count > 0 and mintatantervtargy.melymintatantervtargyelofeltetele.all.count > 0 %}
+                            {{ mintatantervtargy.melytargyelofeltetele.all|join:", " }}, {% for mtt in mintatantervtargy.melymintatantervtargyelofeltetele.all %}{{ mtt.targy }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                        {% elif mintatantervtargy.melytargyelofeltetele.all.count > 0 %}
+                            {{ mintatantervtargy.melytargyelofeltetele.all|join:", " }}
+                        {% elif mintatantervtargy.melymintatantervtargyelofeltetele.all.count > 0 %}
+                            {% for mtt in mintatantervtargy.melymintatantervtargyelofeltetele.all %}{{ mtt.targy }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                        {% endif %}
+                    </td>
+                    <th>{% if mintatantervtargy.kredit %}{{ mintatantervtargy.kredit }}{% else %}{{ mintatantervtargy.targy.kredit }}{% endif %}</th>
+                    <th>{{ mintatantervtargy.targy.kurzustipus.all|join:", " }}</th>
+                    <th>{{ mintatantervtargy.targy.kovetelmeny }}</th>
+                    <th>{{ mintatantervtargy.felvetel_tipusa }}</th>
+                </tr>
+                <tbody class="collapse" id="kurzusok{{ forloop.counter }}">
+                    <tr>
+                        <td></td>
+                        <th class="table-info"><em><u>A tárgy kurzusai</u></em></th>
+                        <td class="table-info"><u>Munkarend</u></td>
+                        <td class="table-info"><u>Oktató</u></td>
+                        <td class="table-info"><u>Kurzuskód</u></td>
+                        <td class="table-info"><u>Megengedett hiányzás</u></td>
+                        <td class="table-info"><u>Vizsgatípus</u></td>
+                        <td></td>
+                    </tr>
+                    {% for kurzus in mintatantervtargy.targy.targymunkarend_set.all %}
+                        {% if not 'KV' in kurzus.kurzuskod and not kurzus.kurzustipus.id == 4 and kurzus.nem_indul == False %}
+                            <tr>
+                                <td colspan="2"></td>
+                                <td class="table-info">{{ kurzus.munkarend }}</td>
+                                <td class="table-info">{{ kurzus.oktato.all|join:", " }}</td>
+                                <td class="table-info">{{ kurzus.kurzuskod }}</td>
+                                <td class="table-info">{{ kurzus.max_hianyzas }}/{{ kurzus.orarend_oraszam }}</td>
+                                <td class="table-info">{{ kurzus.vizsgatipus.all|join:", " }}</td>
+                                <td></td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+                <tr><td colspan="8"></td></tr>
+            {% endif %}
+        {% endfor %}
+    </table>
+    <table class="table table-bordered">
+        <tr class="text-center">
+            {% for felev in felevek %}
+                <td><a class="text-info" href="#felev{{ felev }}">{{ felev }}. félév</a></td>
+            {% endfor %}
+        </tr>
+    </table>
+{% endfor %}
+<p><a class="text-info" href="#top">Vissza a tetejére</a></p>
+{% endblock %}

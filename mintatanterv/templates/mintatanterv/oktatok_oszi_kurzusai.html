@@ -1,0 +1,17 @@
+{% extends "tanulmanyi/home.html" %}
+
+{% block title %}Az őszi félév kurzusainak oktatói{% endblock %}
+
+{% block content %}
+
+<h1>Az őszi félév kurzusainak oktatói</h1>
+
+<hr>
+
+<ul>
+{% for oktato in oktatok %}
+    <li><a class="text-info" href="/mintatantervek/oszi_kurzusok{{ oktato.get_absolute_url }}">{{ oktato.vezeteknev }} {{ oktato.keresztnev }}{% if oktato.avatott_nev %} ({{ oktato.avatott_nev }}){% endif %}</a></li>
+{% endfor %}
+</ul>
+{% if is_staff %}<a class="text-info" href="/mintatantervek/oszi_kurzusok/letoltes/">Kurzuslista Neptun importhoz (XLSX)</a>{% endif %}
+{% endblock %}

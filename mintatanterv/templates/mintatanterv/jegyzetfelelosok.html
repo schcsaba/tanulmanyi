@@ -1,0 +1,17 @@
+{% extends "tanulmanyi/home.html" %}
+
+{% block title %}Jegyzetfelelősök{% endblock %}
+
+{% block content %}
+
+<h1>Jegyzetfelelősök</h1>
+
+<hr>
+
+<ul>
+{% for jegyzetfelelos in jegyzetfelelosok %}
+    <li><a class="text-info" href="/mintatantervek/jegyzetfelelosok{{ jegyzetfelelos.get_absolute_url }}">{{ jegyzetfelelos.vezeteknev }} {{ jegyzetfelelos.keresztnev }}{% if jegyzetfelelos.avatott_nev %} ({{ jegyzetfelelos.avatott_nev }}){% endif %}</a></li>
+{% endfor %}
+</ul>
+
+{% endblock %}

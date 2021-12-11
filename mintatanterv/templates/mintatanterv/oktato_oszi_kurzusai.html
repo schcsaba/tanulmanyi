@@ -1,0 +1,65 @@
+{% extends "tanulmanyi/home.html" %}
+
+{% block title %}{{ oktato.vezeteknev }} {{ oktato.keresztnev }}{% if oktato.avatott_nev %} ({{ oktato.avatott_nev }}){% endif %} őszi kurzusai{% endblock %}
+
+{% block content %}
+
+<h1>{{ oktato.vezeteknev }} {{ oktato.keresztnev }}{% if oktato.avatott_nev %} ({{ oktato.avatott_nev }}){% endif %} őszi kurzusai</h1>
+
+<hr>
+
+<p><a class="text-info" href="/mintatantervek/oszi_kurzusok/">Vissza az oktatók listájához</a></p>
+
+<table class="table table-sm table-bordered">
+    <thead>
+        <tr class="table-success">
+            <th><u>Tárgykód</u></th>
+            <th><u>Tárgynév</u></th>
+            <th><u>Félév</u></th>
+            <th><u>Kredit</u></th>
+            <th><u>Kurzustípus</u></th>
+            <th><u>Követelmény</u></th>
+            <th><u>Felvétel típusa</u></th>
+            <th><u>Ekvivalens tárgy</u></th>
+        </tr>
+    </thead>
+    {% for targy in targyak %}
+        <tr class="table-success">
+            <th>{{ targy.targykod }}</th>
+            <th>{{ targy.targynev }}</th>
+            <th>{{ targy.mintatantervek_felevekkel|join:", " }}</th>
+            <th>{{ targy.kredit }}{% if targy.mintatantervi_kredit %} ({{ targy.mintatantervi_kredit|join:", " }}){% endif %}</th>
+            <th>{{ targy.kurzustipus.all|join:", " }}</th>
+            <th>{{ targy.kovetelmeny }}</th>
+            <th>{{ targy.mintatantervek_felvetel_tipusaval|join:", " }}</th>
+            <th>{% for ekvivalens in targy.ekvivalens_targy.all %}{% if forloop.last %}{{ ekvivalens.targykod }}{% else %}{{ ekvivalens.targykod }}, {% endif %}{% endfor %}</th>
+        </tr>
+        <tr>
+            <td></td>
+            <td class="table-info"><u>Kurzuskód</u></td>
+            <td class="table-info"><u>Munkarend</u></td>
+            <td class="table-info"><u>Óraszám</u></td>
+            <td class="table-info"><u>Hiányzás</u></td>
+            <td class="table-info"><u>Vizsgatípus</u></td>
+            <td class="table-info"><u>Kurzustípus</u></td>
+            <td></td>
+        </tr>
+        {% for kurzus in kurzusok %}
+            {% if kurzus.targy == targy %}
+                <tr>
+                    <td></td>
+                    <td class="table-info">{{ kurzus.kurzuskod }}{% if is_staff and kurzus.orarend_oraszam > 0 %} <a href="{{ kurzus.get_absolute_url }}naplo/"><small>Napló</small></a>{% endif %}</td>
+                    <td class="table-info">{{ kurzus.munkarend }}</td>
+                    <td class="table-info">{{ kurzus.orarend_oraszam }}</td>
+                    <td class="table-info">{{ kurzus.max_hianyzas }}</td>
+                    <td class="table-info">{{ kurzus.vizsgatipus.all|join:", " }}</td>
+                    <td class="table-info">{{ kurzus.kurzustipus }}</td>
+                    <td></td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+</table>
+<p><a class="text-info" href="#top">Vissza a tetejére</a></p>
+<p><a class="text-info" href="/mintatantervek/oszi_kurzusok/">Vissza az oktatók listájához</a></p>
+{% endblock %}

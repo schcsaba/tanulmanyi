@@ -1,0 +1,17 @@
+{% extends "tanulmanyi/home.html" %}
+
+{% block title %}Jegyzetfelelős: {{ oktato.vezeteknev }} {{ oktato.keresztnev }}{% if oktato.avatott_nev %} ({{ oktato.avatott_nev }}){% endif %}{% endblock %}
+
+{% block content %}
+
+<h1>{{ oktato.vezeteknev }} {{ oktato.keresztnev }}{% if oktato.avatott_nev %} ({{ oktato.avatott_nev }}){% endif %} az alábbi tárgyak jegyzetfelelőse</h1>
+
+<hr>
+
+<ul>
+{% for targy in targyak %}
+    <li>{{ targy.targykod }} - {{ targy.targynev }}</li>
+{% endfor %}
+</ul>
+<p><a class="text-info" href="/mintatantervek/jegyzetfelelosok/">Vissza a jegyzetfelelősök listájához</a></p>
+{% endblock %}

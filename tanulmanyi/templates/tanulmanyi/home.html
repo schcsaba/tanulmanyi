@@ -1,0 +1,88 @@
+{% extends "tanulmanyi/base.html" %}
+
+{% block title %}BHF Tanulmányi Osztály{% endblock %}
+
+{% block navbar-list %}
+{% if is_logged_in %}
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown1" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Szakdolgozatok
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdown1">
+            {% if is_staff or is_oktato %}
+                <a class="dropdown-item" href="/szakdolgozatok/aktivtemavezetok">Témavezetők és témaköreik (Oktatóknak)</a>
+                <a class="dropdown-item" href="/szakdolgozatok/valaszthatotemavezetok">Témavezetők és témaköreik (Hallgatóknak)</a>
+            {% else %}
+                <a class="dropdown-item" href="/szakdolgozatok/valaszthatotemavezetok">Témavezetők és témaköreik</a>
+            {% endif %}
+            <a class="dropdown-item" href="/szakdolgozatok/megirtesfolyamatban">Megírt és folyamatban lévő szakdolgozatok</a>
+            <a class="dropdown-item" href="/szakdolgozatok/szakdolgozatrepozitorium">Szakdolgozat-repozitórium</a>
+            {% if is_oktato %}
+                <a class="dropdown-item" href="/szakdolgozatok/megirt">Megírt szakdolgozatok témavezetőnként</a>
+                <a class="dropdown-item" href="/szakdolgozatok/megirtak_jegyenkent">Megírt szakdolgozatok érdemjegyenként</a>
+            {% endif %}
+        </div>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/szabalyzatok/">Szabályzatok</a>
+    </li>
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown2" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Oktatási naptárak
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdown2">
+            {% comment "Az oktatók és a hallgatók órarendje menüpontok egyelőre szükségtelenek." %}
+            {% if is_oktato %}
+                <a class="dropdown-item" href="/orarendek/oktatok">Oktatók órarendje</a>
+            {% endif %}
+            <a class="dropdown-item" href="/orarendek/hallgatok">Hallgatók órarendje</a>
+            {% endcomment %}
+            <a class="dropdown-item" href="/orarendek/osz">Őszi félév</a>
+            <a class="dropdown-item" href="/orarendek/tavasz">Tavaszi félév</a>
+        </div>
+    </li>
+    <li  class="nav-item">
+        <a class="nav-link" href="/mintatantervek/">Mintatantervek</a>
+    </li>
+    <li  class="nav-item">
+        <a class="nav-link" href="/faq/">GYIK</a>
+    </li>
+    {% if is_oktato %}
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown3" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Féléves kurzusok
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown3">
+                <a class="dropdown-item" href="/mintatantervek/oszi_kurzusok">Őszi kurzusok</a>
+                <a class="dropdown-item" href="/mintatantervek/tavaszi_kurzusok">Tavaszi kurzusok</a>
+            </div>
+        </li>
+        <li  class="nav-item">
+            <a class="nav-link" href="/mintatantervek/jegyzetfelelosok">Jegyzetfelelősök</a>
+        </li>
+    {% endif %}
+    {% if is_staff %}
+        <li class="nav-item">
+            <a class="nav-link" href="/admin" target="_blank">Admin</a>
+        </li>
+    {% endif  %}
+    <li class="nav-item">
+        <a class="nav-link" href="/mintatantervek/oktatok_elerhetosegei">Oktatók elérhetőségei</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/accounts/logout/">Kijelentkezés</a>
+    </li>
+{% else %}
+    <li class="nav-item">
+        <a class="nav-link" href="/accounts/login/">Bejelentkezés</a>
+    </li>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+    {% if is_logged_in %}
+        <p>Kérjük, válasszon a fenti menüpontok közül!</p>
+    {% else %}
+        <p>Kérjük, hogy a továbblépéshez jelentkezzen be a <a href="/accounts/login"><em>Bejelentkezés</em></a>-re kattintva!</p>
+    {% endif %}
+{% endblock %}

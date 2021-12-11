@@ -1,0 +1,24 @@
+{% extends "tanulmanyi/home.html" %}
+
+{% block title %}Oktatók elérhetőségei{% endblock %}
+
+{% block content %}
+
+<h1>Oktatók elérhetőségei</h1>
+
+<hr>
+
+{% if oktatok.all.count > 0 %}
+    <table class="table table-striped table-bordered">
+        <thead><tr><td>Név</td><td>Avatott név</td><td>Email</td></tr></thead>
+        <tbody>
+            {% for oktato in oktatok %}
+                <tr><td>{{ oktato.elotag }} {{ oktato.vezeteknev }}  {{ oktato.keresztnev }}</td><td>{{ oktato.avatott_nev }}</td><td>{{ oktato.email }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>Nincsenek megjeleníthető oktatók.</p>
+{% endif %}
+
+{% endblock %}

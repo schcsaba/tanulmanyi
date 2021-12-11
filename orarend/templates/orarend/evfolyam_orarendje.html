@@ -1,0 +1,35 @@
+{% extends "tanulmanyi/home.html" %}
+
+{% block title %}{% if title %}{{ title }}{% else %}{{ evfolyam_neve }} órarendje{% endif %}{% endblock %}
+
+{{% block content %}
+
+{% if visszajelzes %}
+
+<h3>{{ visszajelzes }}</h3>
+
+{% else %}
+
+<h1>{{ evfolyam_neve }} nappali tagozatos órarendje</h1>
+
+<hr>
+
+<p><a class="text-info" href="/orarendek/hallgatok/">Vissza az évfolyamok listájához</a></p>
+
+{% autoescape off %}
+{% for orarend in orarendek %}
+    <h3>{% if forloop.counter >= szunet %}{{ forloop.counter|add:"1" }}{% else %}{{ forloop.counter }}{% endif %}. hét</h3>
+    {{ orarend }}
+{% endfor %}
+
+<h3>Megjegyzések</h3>
+
+{{ megjegyzesek }}
+
+{% endautoescape %}
+
+<p><a class="text-info" href="/orarendek/hallgatok/">Vissza az évfolyamok listájához</a></p>
+
+{% endif %}
+
+{% endblock %}

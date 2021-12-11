@@ -1,0 +1,31 @@
+{% extends "tanulmanyi/home.html" %}
+{% block title %}
+    GYIK
+{% endblock %}
+{% block content %}
+
+<h1>Gyakran ismételt kérdések</h1>
+
+<hr>
+
+{% if kerdesek.all.count > 0 %}
+    <ul class="list-group">
+        {% for k in kerdesek.all %}
+            <li class="list-group-item"><a class="text-info" href="#kerdes{{ k.id }}">{{ k.kerdes }}</a></li>
+        {% endfor %}
+    </ul>
+    {% for k in kerdesek.all %}
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title" id="kerdes{{ k.id }}">{{ k.kerdes }}</h5>
+                {% autoescape off %}
+                    {{ k.valasz }}
+                {% endautoescape %}
+            </div>
+        </div>
+        <p><a class="text-info" href="#top">Vissza a tetejére</a></p>
+    {% endfor %}
+{% else %}
+    <p>Még nincsenek gyakran ismételt kérdések.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,173 @@
+{% extends "tanulmanyi/home.html" %}
+{% block title %}
+    Témavezetők és témaköreik
+{% endblock %}
+{% block content %}
+
+{% autoescape off %}
+    {{ temavalasztas_menete }}
+{% endautoescape %}
+
+<hr>
+
+{% if valaszthato_temavezetok.count > 0 %}
+    <!--<h3>Összes szabad hely: {{ osszes_szabad_hely }} | Kint lévő címbejelentők: {{ osszes_cimbejelento }}</h3>-->
+    <h3>Összes szabad hely: {{ osszes_szabad_hely }}</h3>
+    <!--<h4>Letöltés: <a href="/szakdolgozatok/temavezetok/letoltes/">DOCX</a></h4>-->
+    <div class="accordion" id="accordion">
+        {% for temavezeto in valaszthato_temavezetok %}
+            <div class="card">
+                <div class="card-header" id="card{{ forloop.counter }}-heading">
+                    <h6 class="mb-0">
+                        <address>
+                            <button class="btn btn-link text-left collapsed" type="button" data-toggle="collapse" data-target="#card{{ forloop.counter }}-collapse" aria-expanded="false" aria-controls="card{{ forloop.counter }}-collapse">
+                                <h5 class="text-info">{% if temavezeto.elotag %} {{ temavezeto.elotag }} {% endif %} {{ temavezeto.vezeteknev }} {{ temavezeto.keresztnev }} {% if temavezeto.avatott_nev %} ({{ temavezeto.avatott_nev }}) {% endif %} | Szabad helyek: {{ temavezeto.szabad_helyek }}</h5>
+                            </button>
+                            {#<br><strong>Telefon:</strong> {{ temavezeto.tel }}#}
+                            <br><strong>Email:</strong> <a class="text-info" href="mailto:{{ temavezeto.email }}">{{ temavezeto.email }}</a>
+                        </address>
+                    </h6>
+                </div>
+                <div id="card{{ forloop.counter }}-collapse" class="collapse" aria-labelledby="card{{ forloop.counter }}-heading" data-parent="#accordion">
+                    <div class="card-body">
+                        {% if temavezeto.valaszthato_temakorok_hallgatoknak_szama %}
+                            <div class="accordion" id="card{{ forloop.counter }}-accordion">
+                                <h2>Témakörök</h2>
+                                {% for temavezetotemakor in temavezeto.valaszthato_temakorok_hallgatoknak %}
+                                    <div class="card">
+                                        <div class="card-header" id="card{{ forloop.parentloop.counter }}_{{ forloop.counter }}-heading">
+                                            <h6 class="mb-0">
+                                                <address>
+                                                    <button class="btn btn-link text-left collapsed" type="button" data-toggle="collapse" data-target="#card{{ forloop.parentloop.counter }}_{{ forloop.counter }}-collapse" aria-expanded="false" aria-controls="card{{ forloop.parentloop.counter }}_{{ forloop.counter }}-collapse">
+                                                        <h5 class="text-dark">{{ temavezetotemakor.temakor.cim }}</h5>
+                                                    </button>
+                                                    <p><strong class="text-success">Szabad</strong> címjavaslatok száma: <span class="badge badge-pill badge-dark">{{ temavezetotemakor.szabad_plusz_temak.count }}</span></p>
+                                                </address>
+                                            </h6>
+                                        </div>
+                                        <div id="card{{ forloop.parentloop.counter }}_{{ forloop.counter }}-collapse" class="collapse" aria-labelledby="card{{ forloop.parentloop.counter }}_{{ forloop.counter }}-heading" data-parent="#card{{ forloop.parentloop.counter }}-accordion">
+                                            <div class="card-body">
+                                                {% if temavezetotemakor.szabad_plusz_cimbejelento_temak.count > 0 %}
+                                                    <div class="accordion" id="card{{ forloop.parentloop.counter }}_{{ forloop.counter }}-accordion">
+                                                        <h3>Címjavaslatok (a szakdolgozat írása során pontosítandó)</h3>
+                                                        {% for tema in temavezetotemakor.szabad_plusz_cimbejelento_temak %}
+                                                            <div class="card {% if tema.tema_statusz.nev == 'Szabad' or tema.tema_statusz.nev == 'Szabad (elkezdett, de be nem fejezett)' %} border-success {% elif tema.tema_statusz.nev == 'Címbejelentő lap kiadva' %} border-warning {% else %} border-danger {% endif %}">
+                                                                <div class="card-header" id="card{{ forloop.parentloop.parentloop.counter }}_{{ forloop.parentloop.counter }}_{{ forloop.counter }}-heading">
+                                                                    <h6 class="mb-0">
+                                                                        <address>
+                                                                            <button class="btn btn-link text-left collapsed" type="button" data-toggle="collapse" data-target="#card{{ forloop.parentloop.parentloop.counter }}_{{ forloop.parentloop.counter }}_{{ forloop.counter }}-collapse" aria-expanded="false" aria-controls="card{{ forloop.parentloop.parentloop.counter }}_{{ forloop.parentloop.counter }}_{{ forloop.counter }}-collapse">
+                                                                                <h5>
+                                                                                    {% if tema.tema_statusz.nev == "Szabad" or tema.tema_statusz.nev == "Szabad (elkezdett, de be nem fejezett)" %}
+                                                                                        <span class="text-success">
+                                                                                            <svg class="bi bi-check-circle" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                                                                                <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                                                                                <path fill-rule="evenodd" d="M10.97 4.97a.75.75 0 0 1 1.071 1.05l-3.992 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.236.236 0 0 1 .02-.022z"/>
+                                                                                            </svg>
+                                                                                            {{ tema.tema_statusz }}
+                                                                                        </span>
+                                                                                    {% elif tema.tema_statusz.nev == "Címbejelentő lap kiadva" %}
+                                                                                        <span class="text-warning">
+                                                                                            <svg class="bi bi-x-circle" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                                                                                <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                                                                                <path fill-rule="evenodd" d="M11.854 4.146a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708-.708l7-7a.5.5 0 0 1 .708 0z"/>
+                                                                                                <path fill-rule="evenodd" d="M4.146 4.146a.5.5 0 0 0 0 .708l7 7a.5.5 0 0 0 .708-.708l-7-7a.5.5 0 0 0-.708 0z"/>
+                                                                                            </svg>
+                                                                                            {{ tema.tema_statusz }}
+                                                                                        </span>
+                                                                                    {% else %}
+                                                                                        <span class="text-danger">
+                                                                                            <svg class="bi bi-x-circle" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                                                                                <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                                                                                <path fill-rule="evenodd" d="M11.854 4.146a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708-.708l7-7a.5.5 0 0 1 .708 0z"/>
+                                                                                                <path fill-rule="evenodd" d="M4.146 4.146a.5.5 0 0 0 0 .708l7 7a.5.5 0 0 0 .708-.708l-7-7a.5.5 0 0 0-.708 0z"/>
+                                                                                            </svg>
+                                                                                            {{ tema.tema_statusz }}
+                                                                                        </span>
+                                                                                    {% endif %}
+                                                                                </h5>
+                                                                            </button>
+                                                                            <p>{{ tema.cim }}</p>
+                                                                            <p><strong>Idegen nyelv követelmény:</strong> {% if tema.idegen_nyelv_szukseges %} {{ tema.idegen_nyelv_szukseges }} {% else %} Nincs. {% endif %}</p>
+                                                                            <p><strong>Megjegyzés:</strong> {% if tema.megjegyzes %} {{ tema.megjegyzes }} {% else %} Nincs. {% endif %}</p>
+                                                                        </address>
+                                                                    </h6>
+                                                                </div>
+                                                                <div id="card{{ forloop.parentloop.parentloop.counter }}_{{ forloop.parentloop.counter }}_{{ forloop.counter }}-collapse" class="collapse" aria-labelledby="card{{ forloop.parentloop.parentloop.counter }}_{{ forloop.parentloop.counter }}_{{ forloop.counter }}-heading" data-parent="#card{{ forloop.parentloop.parentloop.counter }}_{{ forloop.parentloop.counter }}-accordion">
+                                                                    <div class="card-body">
+                                                                        <h4>A címen eddig dolgozó hallgatók</h4>
+                                                                        {% if tema.hallgatokepzestema_set.all.count > 0 %}
+                                                                            <div class="table-responsive">
+                                                                                <table class="table table-striped table-bordered">
+                                                                                    <thead><tr><th>Hallgató és képzése</th><th>Szakdolgozathoz kapcsolódó tárgyat felvett vagy kérvény alapján segíti témavezető?</th><th>Cím kidolgozásának kezdete</th><th>Cím kidolgozásának vége</th></tr></thead>
+                                                                                    <tbody>
+                                                                                    {% for hallgatokepzestema in tema.hallgatokepzestema_set.all %}
+                                                                                        <tr class="{% if hallgatokepzestema.szakdolgozat_targyat_felvett %} text-success {% else %} text-secondary {% endif %}">
+                                                                                            <td>
+                                                                                                {% if hallgatokepzestema.szakdolgozat_targyat_felvett %}
+                                                                                                    {{ hallgatokepzestema.hallgato_kepzes }}
+                                                                                                {% else %}
+                                                                                                    Nem nyilvános
+                                                                                                {% endif %}
+                                                                                            </td>
+                                                                                            <td>
+                                                                                                {% if hallgatokepzestema.szakdolgozat_targyat_felvett %}
+                                                                                                    {% if hallgatokepzestema.szakdolgozat_targyat_felvett %}
+                                                                                                        Igen
+                                                                                                    {% else %}
+                                                                                                        Nem
+                                                                                                    {% endif %}
+                                                                                                {% else %}
+                                                                                                    -
+                                                                                                {% endif %}
+                                                                                            </td>
+                                                                                            <td>
+                                                                                                {% if hallgatokepzestema.szakdolgozat_targyat_felvett %}
+                                                                                                    {{ hallgatokepzestema.kezdet }}
+                                                                                                {% else %}
+                                                                                                    Nem nyilvános
+                                                                                                {% endif %}
+                                                                                            </td>
+                                                                                            <td>
+                                                                                                {% if hallgatokepzestema.szakdolgozat_targyat_felvett %}
+                                                                                                    {% if not hallgatokepzestema.veg %}
+                                                                                                        Folyamatban
+                                                                                                    {% else %}
+                                                                                                        {{ hallgatokepzestema.veg }}
+                                                                                                    {% endif %}
+                                                                                                {% else %}
+                                                                                                    Nem nyilvános
+                                                                                                {% endif %}
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                    {% endfor %}
+                                                                                    </tbody>
+                                                                                </table>
+                                                                            </div>
+                                                                        {% else %}
+                                                                            <p>A címen jelenleg nem dolgozik, illetve korábban eddig még nem dolgozott hallgató.</p>
+                                                                        {% endif %}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% else %}
+                                                    <p>A témakörben jelenleg nincsenek előre meghirdetett címjavaslatok, de a hallgatók kitalálhatnak ide illőket.</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p>A témavezetőnek nincsenek témakörei és címei.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p>Az adatbázisban nincsenek választható témavezetők.</p>
+{% endif %}
+{% endblock %}

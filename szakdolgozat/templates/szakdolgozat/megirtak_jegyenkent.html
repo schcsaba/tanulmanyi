@@ -1,0 +1,59 @@
+{% extends "tanulmanyi/home.html" %}
+{% block title %}
+    Megírt szakdolgozatok érdemjegyenként
+{% endblock %}
+{% block content %}
+<h1>Megírt szakdolgozatok érdemjegyenként</h1>
+<hr>
+{% if erdemjegyek.count > 0 %}
+    <div class="accordion" id="accordion">
+        {% for erdemjegy in erdemjegyek %}
+            {% if erdemjegy.hallgatokepzestema_set.all.count > 0 %}
+                <div class="card">
+                    <div class="card-header" id="card{{ forloop.counter }}-heading">
+                        <h6 class="mb-0">
+                            <address>
+                                <button class="btn btn-link text-left collapsed" type="button" data-toggle="collapse" data-target="#card{{ forloop.counter }}-collapse" aria-expanded="false" aria-controls="card{{ forloop.counter }}-collapse">
+                                    <h5 class="text-info">{{ erdemjegy }}</h5>
+                                </button>
+                                <br><strong>Szakdolgozatok száma:</strong> <span class="badge badge-pill badge-dark">{{ erdemjegy.hallgatokepzestema_set.all.count }}</span>
+                            </address>
+                        </h6>
+                    </div>
+                    <div id="card{{ forloop.counter }}-collapse" class="collapse" aria-labelledby="card{{ forloop.counter }}-heading" data-parent="#accordion">
+                        <div class="card-body">
+                            <div class="accordion" id="card{{ forloop.counter }}-accordion">
+                                <h2>Szakdolgozatok</h2>
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-bordered">
+                                        <thead><tr><th>Cím</th><th>Hallgató és képzése</th><th>Cím kidolgozásának kezdete</th><th>Cím kidolgozásának vége</th></tr></thead>
+                                        <tbody>
+                                        {% for hallgatokepzestema in erdemjegy.hallgatokepzestema_set.all %}
+                                            <tr>
+                                                <td>
+                                                    {{ hallgatokepzestema.tema.cim }}
+                                                </td>
+                                                <td>
+                                                    {{ hallgatokepzestema.hallgato_kepzes }}
+                                                </td>
+                                                <td>
+                                                    {{ hallgatokepzestema.kezdet }}
+                                                </td>
+                                                <td>
+                                                    {{ hallgatokepzestema.veg }}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+{% else %}
+    <p>Az adatbázisban nincsenek érdemjegyek.</p>
+{% endif %}
+{% endblock %}

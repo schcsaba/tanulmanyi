@@ -1,0 +1,11 @@
+{% extends "tanulmanyi/home.html" %}
+
+{% block title %}{% if title %}{{ title }}{% else %}Szabályzatok{% endif %}{% endblock %}
+
+{% block content %}
+
+<h3>A kért szabályzat nem létezik!</h3>
+
+<a class="text-info" href="/szabalyzatok/">Vissza a szabályzatokhoz</a>
+
+{% endblock %}
