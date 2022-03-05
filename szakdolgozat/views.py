@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db.models import Q
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from szakdolgozat.models import Temavezeto, Tema, HallgatoKepzesTema, ErdemJegy, Beallitas
 
@@ -83,10 +84,14 @@ def aktiv_temavezetok(request):
 @login_required
 def megirtesfolyamatban_pag_or_search(request):
     args = {}
-    if request.GET.get('search_text'):
-        search_text = request.GET.get('search_text')
-        args['search_text'] = search_text
-        hallgatokepzestema = HallgatoKepzesTema.objects.filter(tema__cim__icontains=search_text).exclude(tema__tema_statusz__exact=4).order_by('-kezdet', '-veg')
+    if request.GET.get('cim') or request.GET.get('hallgato') or request.GET.get('temavezeto'):
+        cim = request.GET.get('cim')
+        args['cim'] = cim
+        hallgato = request.GET.get('hallgato')
+        args['hallgato'] = hallgato
+        temavezeto = request.GET.get('temavezeto')
+        args['temavezeto'] = temavezeto
+        hallgatokepzestema = HallgatoKepzesTema.objects.filter(tema__cim__icontains=cim).filter(Q(hallgato_kepzes__hallgato__vezeteknev__icontains=hallgato) | Q(hallgato_kepzes__hallgato__keresztnev__icontains=hallgato) | Q(hallgato_kepzes__hallgato__neptun_kod__icontains=hallgato)).filter(Q(tema__temavezeto_temakor__temavezeto__vezeteknev__icontains=temavezeto) | Q(tema__temavezeto_temakor__temavezeto__keresztnev__icontains=temavezeto) | Q(tema__temavezeto_temakor__temavezeto__neptun_kod__icontains=temavezeto)).exclude(tema__tema_statusz__exact=4).order_by('-kezdet', '-veg')
     else:
         hallgatokepzestema = HallgatoKepzesTema.objects.exclude(tema__tema_statusz__exact=4).order_by('-kezdet', '-veg')
 
@@ -107,12 +112,16 @@ def megirtesfolyamatban_pag_or_search(request):
 @login_required
 def szakdolgozatrepozitorium(request):
     args = {}
-    if request.GET.get('search_text'):
-        search_text = request.GET.get('search_text')
-        args['search_text'] = search_text
-        hallgatokepzestema = HallgatoKepzesTema.objects.filter(tema__cim__icontains=search_text).filter(tema__tema_statusz__exact=3).filter(veg__year__gte=2013).exclude(hallgato_kepzes__statusz__exact=6).order_by('-veg')
+    if request.GET.get('cim') or request.GET.get('hallgato') or request.GET.get('temavezeto'):
+        cim = request.GET.get('cim')
+        args['cim'] = cim
+        hallgato = request.GET.get('hallgato')
+        args['hallgato'] = hallgato
+        temavezeto = request.GET.get('temavezeto')
+        args['temavezeto'] = temavezeto
+        hallgatokepzestema = HallgatoKepzesTema.objects.filter(tema__cim__icontains=cim).filter(Q(hallgato_kepzes__hallgato__vezeteknev__icontains=hallgato) | Q(hallgato_kepzes__hallgato__keresztnev__icontains=hallgato) | Q(hallgato_kepzes__hallgato__neptun_kod__icontains=hallgato)).filter(Q(tema__temavezeto_temakor__temavezeto__vezeteknev__icontains=temavezeto) | Q(tema__temavezeto_temakor__temavezeto__keresztnev__icontains=temavezeto) | Q(tema__temavezeto_temakor__temavezeto__neptun_kod__icontains=temavezeto)).filter(tema__tema_statusz__exact=3).filter(veg__year__gte=2013).filter(erdemjegy__isnull=False).exclude(hallgato_kepzes__statusz__exact=6).order_by('-veg')
     else:
-        hallgatokepzestema = HallgatoKepzesTema.objects.filter(tema__tema_statusz__exact=3).filter(veg__year__gte=2013).exclude(hallgato_kepzes__statusz__exact=6).order_by('-veg')
+        hallgatokepzestema = HallgatoKepzesTema.objects.filter(tema__tema_statusz__exact=3).filter(veg__year__gte=2013).filter(erdemjegy__isnull=False).exclude(hallgato_kepzes__statusz__exact=6).order_by('-veg')
 
     paginator = Paginator(hallgatokepzestema, 20)
     args['paginator'] = paginator

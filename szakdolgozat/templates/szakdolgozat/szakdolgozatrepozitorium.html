@@ -5,18 +5,29 @@
 {% block content %}
 <h1>Szakdolgozat-repozitórium</h1>
 <hr>
+<h2>Keresés</h2>
 <form class="form-inline" action="." method="GET">
     <div class="form-group mb-2">
-        <label for="search_text" class="ml-2">Keresés a szakdolgozatok címében:</label>
-        <input type="text" class="form-control ml-2" name="search_text" id="search_text" value={% if search_text %} {{ search_text }} {% endif %}>
-        <button type="submit" class="btn btn-info ml-2">Keresés</button>
+        <label for="cim" class="ml-2">Szakdolgozat címe:</label>
+        <input type="text" class="form-control ml-2" name="cim" id="cim" value={% if cim %} {{ cim }} {% endif %}>
+    </div>
+    <div class="form-group mb-2">
+        <label for="hallgato" class="ml-2">Hallgató:</label>
+        <input type="text" class="form-control ml-2" name="hallgato" id="hallgato" value={% if hallgato %} {{ hallgato }} {% endif %}>
+    </div>
+    <div class="form-group mb-2">
+        <label for="temavezeto" class="ml-2">Témavezető:</label>
+        <input type="text" class="form-control ml-2" name="temavezeto" id="temavezeto" value={% if temavezeto %} {{ temavezeto }} {% endif %}>
+    </div>
+    <div class="form-group mb-2">
+        <input class="btn btn-info ml-2" type="submit" value="Keresés">
         <a class="btn btn-info ml-2" href="." role="button">Keresés törlése</a>
     </div>
 </form>
 <nav aria-label="szakdolgozatlista">
     {% if paginator.count > 0 %}
         <h2>Szakdolgozatok</h2>
-        <ul class="pagination pagination-sm">
+        <ul class="pagination pagination-sm flex-wrap">
             {% if paginatorpage.has_previous %}
                 <li class="page-item">
                     <a class="page-link" href="?page={{ paginatorpage.previous_page_number }}{% if search_text %}&search_text={{ search_text }}{% endif %}" aria-label="Previous">
@@ -87,7 +98,7 @@
                 </tr>
             {% endfor %}
         </table>
-        <ul class="pagination pagination-sm">
+        <ul class="pagination pagination-sm flex-wrap">
             {% if paginatorpage.has_previous %}
                 <li class="page-item">
                     <a class="page-link" href="?page={{ paginatorpage.previous_page_number }}{% if search_text %}&search_text={{ search_text }}{% endif %}" aria-label="Previous">
