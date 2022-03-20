@@ -275,7 +275,7 @@ class HallgatoKepzesTema(models.Model):
     tema = models.ForeignKey(Tema, on_delete=models.CASCADE, verbose_name='cím')
     kezdet = models.DateField(verbose_name='kezdet')
     veg = models.DateField(blank=True, null=True, verbose_name='vég')
-    erdemjegy = models.ForeignKey(ErdemJegy, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='érdemjegy', help_text='A témavezető és az opponens által adott jegy átlaga, az opponens által dott jegy felé kerekítve, azaz a Szakdolgozat tárgyra kapott jegy.')
+    erdemjegy = models.ForeignKey(ErdemJegy, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='érdemjegy', help_text='A témavezető és az opponens által adott jegy átlaga, az opponens által adott jegy felé kerekítve, azaz a Szakdolgozat tárgyra kapott jegy.')
     szakdolgozat_targyat_felvett = models.BooleanField(verbose_name='szakdolgozat tárgyat felvett vagy kérvény alapján segíti témavezető', default=False)
     kerveny = models.CharField(max_length=12, choices=KERVENYEK_CHOICES, default=kerveny_00, verbose_name='hányszor kérvényezte a témavezetői segítséget', help_text='Ezt a mezőt még nem használjuk, a fentebbi jelölőnégyzetet kell használni.')
     szakdolgozat_link = models.URLField(blank=True, null=True, verbose_name='szakdolgozat link')
