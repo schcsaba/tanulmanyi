@@ -204,7 +204,7 @@ class Targy(models.Model):
     kurzustipus = models.ManyToManyField(Kurzustipus, blank=True, verbose_name='kurzustípus')
     elofeltetel_targy = models.ManyToManyField('self', symmetrical=False, blank=True, verbose_name='előfeltétel tárgy', related_name='ezentargyakelofeltetele')
     elofeltetel_targy_tipussal = models.ManyToManyField('self', through='Elofeltetel', symmetrical=False, blank=True, verbose_name='előfeltétel tárgy típussal', related_name='ezentargyakelofelteteletipussal')
-    ekvivalens_targy = models.ManyToManyField('self', blank=True, verbose_name='ekvivalens tárgy', related_name='targyekvivalenstargyai')
+    ekvivalens_targy = models.ManyToManyField('self', blank=True, verbose_name='ekvivalens tárgy')
     munkarend = models.ManyToManyField(Munkarend, through='TargyMunkarend', blank=True, verbose_name='kurzus')
     oktato = models.ManyToManyField(Oktato, through='TargyOktato', blank=True, verbose_name='tárgyoktató')
     mintatanterv = models.ManyToManyField('Mintatanterv', through='MintatantervTargy', blank=True, verbose_name='tárgy mintatantervei', related_name='targymintatantervei')
