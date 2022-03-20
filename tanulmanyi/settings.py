@@ -146,3 +146,5 @@ STATIC_ROOT = '/home/bhf/tanulmanyi/static'
 MEDIA_ROOT = '/home/bhf/media/'
 
 TINYMCE_DEFAULT_CONFIG = {'cols': 80, 'rows': 10}
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
