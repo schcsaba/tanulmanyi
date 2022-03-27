@@ -119,9 +119,9 @@ def szakdolgozatrepozitorium(request):
         args['hallgato'] = hallgato
         temavezeto = request.GET.get('temavezeto')
         args['temavezeto'] = temavezeto
-        hallgatokepzestema = HallgatoKepzesTema.objects.filter(tema__cim__icontains=cim).filter(Q(hallgato_kepzes__hallgato__vezeteknev__icontains=hallgato) | Q(hallgato_kepzes__hallgato__keresztnev__icontains=hallgato) | Q(hallgato_kepzes__hallgato__neptun_kod__icontains=hallgato)).filter(Q(tema__temavezeto_temakor__temavezeto__vezeteknev__icontains=temavezeto) | Q(tema__temavezeto_temakor__temavezeto__keresztnev__icontains=temavezeto) | Q(tema__temavezeto_temakor__temavezeto__neptun_kod__icontains=temavezeto)).filter(tema__tema_statusz__exact=3).filter(veg__year__gte=2013).filter(erdemjegy__isnull=False).filter(hallgato_kepzes__statusz__exact=4).order_by('-veg')
+        hallgatokepzestema = HallgatoKepzesTema.objects.filter(tema__cim__icontains=cim).filter(Q(hallgato_kepzes__hallgato__vezeteknev__icontains=hallgato) | Q(hallgato_kepzes__hallgato__keresztnev__icontains=hallgato) | Q(hallgato_kepzes__hallgato__neptun_kod__icontains=hallgato)).filter(Q(tema__temavezeto_temakor__temavezeto__vezeteknev__icontains=temavezeto) | Q(tema__temavezeto_temakor__temavezeto__keresztnev__icontains=temavezeto) | Q(tema__temavezeto_temakor__temavezeto__neptun_kod__icontains=temavezeto)).filter(tema__tema_statusz__exact=3).filter(veg__year__gte=2013).filter(erdemjegy__isnull=False).filter(hallgato_kepzes__statusz__in=[2, 4, 5, 9]).order_by('-veg')
     else:
-        hallgatokepzestema = HallgatoKepzesTema.objects.filter(tema__tema_statusz__exact=3).filter(veg__year__gte=2013).filter(erdemjegy__isnull=False).filter(hallgato_kepzes__statusz__exact=4).order_by('-veg')
+        hallgatokepzestema = HallgatoKepzesTema.objects.filter(tema__tema_statusz__exact=3).filter(veg__year__gte=2013).filter(erdemjegy__isnull=False).filter(hallgato_kepzes__statusz__in=[2, 4, 5, 9]).order_by('-veg')
 
     paginator = Paginator(hallgatokepzestema, 20)
     args['paginator'] = paginator
