@@ -93,9 +93,9 @@ class HallgatoKepzesTemaAdmin(admin.ModelAdmin):
             return ["hallgato_kepzes", "tema"]
         else:
             return []
-    list_filter = ('kezdet', 'veg', 'hallgato_kepzes__kepzes', 'tema__tema_statusz', 'tema__temavezeto_temakor__temavezeto', 'erdemjegy', 'szakdolgozat_targyat_felvett')
+    list_filter = ('kezdet', 'veg', 'hallgato_kepzes__kepzes', 'tema__tema_statusz', 'tema__temavezeto_temakor__temavezeto', 'erdemjegy', 'szakdolgozat_targyat_felvett', 'sikeres_vedes_datuma')
     list_per_page = 500
-    list_display = ('hallgato_kepzes', 'kezdet', 'veg', 'erdemjegy', 'szakdolgozat_targyat_felvett', 'tema')
+    list_display = ('hallgato_kepzes', 'kezdet', 'veg', 'erdemjegy', 'szakdolgozat_targyat_felvett', 'tema', 'sikeres_vedes_datuma')
     search_fields = ('hallgato_kepzes__hallgato__elotag', 'hallgato_kepzes__hallgato__vezeteknev', 'hallgato_kepzes__hallgato__keresztnev', 'hallgato_kepzes__hallgato__neptun_kod', 'tema__cim')
     radio_fields = {'kerveny': admin.VERTICAL}
     actions = ['szakdolgozat_targyat_felvett', 'szakdolgozat_targyat_nem_vett_fel']
