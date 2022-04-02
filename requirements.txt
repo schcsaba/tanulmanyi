@@ -6,10 +6,10 @@ Django==4.0.3
 django-phonenumber-field==6.1.0
 django-tinymce==3.4.0
 mysqlclient==2.1.0
-phonenumbers==8.12.44
+phonenumbers==8.12.46
 pip-autoremove==0.10.0
 python-decouple==3.6
-pytz==2021.3
+pytz==2022.1
 soupsieve==2.3.1
 sqlparse==0.4.2
 XlsxWriter==3.0.3
