@@ -177,32 +177,35 @@ def xlsx_oktatok_kurzusai_osz(request):
     sheet.write(0, 13, 'Kurzusfelvételi követelmény leírás')
     sheet.write(0, 14, 'Tagozat')
     sheet.write(0, 15, 'Alkalmazott Neptun kódja')
+    sheet.write(0, 16, 'Mintatanterv kódja')
     x = 1
     for kurzus in kurzusok:
-        for oktato in kurzus.oktato.all():
-            sheet.write(x, 0, kurzus.targy.targykod)
-            sheet.write(x, 1, felev)
-            sheet.write(x, 2, kurzus.kurzuskod)
-            sheet.write(x, 3, kurzus.max_letszam)
-            if kurzus.nyelv:
-                sheet.write(x, 4, kurzus.nyelv.nev)
-            if kurzus.kurzustipus:
-                sheet.write(x, 5, kurzus.kurzustipus.nev)
-            sheet.write(x, 6, kurzus.megjegyzes)
-            sheet.write(x, 7, round(float(kurzus.akkr_oraszam) / 15, 1))
-            sheet.write(x, 8, kurzus.akkr_oraszam)
-            if kurzus.kurzustipus:
-                if kurzus.kurzustipus.id == 4:
-                    sheet.write(x, 9, 'Vizsgakurzus')
-                else:
-                    sheet.write(x, 9, 'Normál')
-            sheet.write(x, 10, kurzus.lejelentkezes_letiltva)
-            sheet.write(x, 11, kurzus.jelentkezes_letiltva)
-            sheet.write(x, 12, kurzus.kurzusfelveteli_kovetelmeny)
-            sheet.write(x, 13, kurzus.kurzusfelveteli_kovetelmeny_leiras)
-            sheet.write(x, 14, kurzus.munkarend.nev)
-            sheet.write(x, 15, oktato.neptun_kod)
-            x += 1
+        for mintatanterv in kurzus.targy.mintatanterv.filter(aktualis=True):
+            for oktato in kurzus.oktato.all():
+                sheet.write(x, 0, kurzus.targy.targykod)
+                sheet.write(x, 1, felev)
+                sheet.write(x, 2, kurzus.kurzuskod)
+                sheet.write(x, 3, kurzus.max_letszam)
+                if kurzus.nyelv:
+                    sheet.write(x, 4, kurzus.nyelv.nev)
+                if kurzus.kurzustipus:
+                    sheet.write(x, 5, kurzus.kurzustipus.nev)
+                sheet.write(x, 6, kurzus.megjegyzes)
+                sheet.write(x, 7, round(float(kurzus.akkr_oraszam) / 15, 1))
+                sheet.write(x, 8, kurzus.akkr_oraszam)
+                if kurzus.kurzustipus:
+                    if kurzus.kurzustipus.id == 4:
+                        sheet.write(x, 9, 'Vizsgakurzus')
+                    else:
+                        sheet.write(x, 9, 'Normál')
+                sheet.write(x, 10, kurzus.lejelentkezes_letiltva)
+                sheet.write(x, 11, kurzus.jelentkezes_letiltva)
+                sheet.write(x, 12, kurzus.kurzusfelveteli_kovetelmeny)
+                sheet.write(x, 13, kurzus.kurzusfelveteli_kovetelmeny_leiras)
+                sheet.write(x, 14, kurzus.munkarend.nev)
+                sheet.write(x, 15, oktato.neptun_kod)
+                sheet.write(x, 16, mintatanterv.kod)
+                x += 1
     book.close()
 
     output.seek(0)
@@ -243,32 +246,35 @@ def xlsx_oktatok_kurzusai_tavasz(request):
     sheet.write(0, 13, 'Kurzusfelvételi követelmény leírás')
     sheet.write(0, 14, 'Tagozat')
     sheet.write(0, 15, 'Alkalmazott Neptun kódja')
+    sheet.write(0, 16, 'Mintatanterv kódja')
     x = 1
     for kurzus in kurzusok:
-        for oktato in kurzus.oktato.all():
-            sheet.write(x, 0, kurzus.targy.targykod)
-            sheet.write(x, 1, felev)
-            sheet.write(x, 2, kurzus.kurzuskod)
-            sheet.write(x, 3, kurzus.max_letszam)
-            if kurzus.nyelv:
-                sheet.write(x, 4, kurzus.nyelv.nev)
-            if kurzus.kurzustipus:
-                sheet.write(x, 5, kurzus.kurzustipus.nev)
-            sheet.write(x, 6, kurzus.megjegyzes)
-            sheet.write(x, 7, round(float(kurzus.akkr_oraszam) / 15, 1))
-            sheet.write(x, 8, kurzus.akkr_oraszam)
-            if kurzus.kurzustipus:
-                if kurzus.kurzustipus.id == 4:
-                    sheet.write(x, 9, 'Vizsgakurzus')
-                else:
-                    sheet.write(x, 9, 'Normál')
-            sheet.write(x, 10, kurzus.lejelentkezes_letiltva)
-            sheet.write(x, 11, kurzus.jelentkezes_letiltva)
-            sheet.write(x, 12, kurzus.kurzusfelveteli_kovetelmeny)
-            sheet.write(x, 13, kurzus.kurzusfelveteli_kovetelmeny_leiras)
-            sheet.write(x, 14, kurzus.munkarend.nev)
-            sheet.write(x, 15, oktato.neptun_kod)
-            x += 1
+        for mintatanterv in kurzus.targy.mintatanterv.filter(aktualis=True):
+            for oktato in kurzus.oktato.all():
+                sheet.write(x, 0, kurzus.targy.targykod)
+                sheet.write(x, 1, felev)
+                sheet.write(x, 2, kurzus.kurzuskod)
+                sheet.write(x, 3, kurzus.max_letszam)
+                if kurzus.nyelv:
+                    sheet.write(x, 4, kurzus.nyelv.nev)
+                if kurzus.kurzustipus:
+                    sheet.write(x, 5, kurzus.kurzustipus.nev)
+                sheet.write(x, 6, kurzus.megjegyzes)
+                sheet.write(x, 7, round(float(kurzus.akkr_oraszam) / 15, 1))
+                sheet.write(x, 8, kurzus.akkr_oraszam)
+                if kurzus.kurzustipus:
+                    if kurzus.kurzustipus.id == 4:
+                        sheet.write(x, 9, 'Vizsgakurzus')
+                    else:
+                        sheet.write(x, 9, 'Normál')
+                sheet.write(x, 10, kurzus.lejelentkezes_letiltva)
+                sheet.write(x, 11, kurzus.jelentkezes_letiltva)
+                sheet.write(x, 12, kurzus.kurzusfelveteli_kovetelmeny)
+                sheet.write(x, 13, kurzus.kurzusfelveteli_kovetelmeny_leiras)
+                sheet.write(x, 14, kurzus.munkarend.nev)
+                sheet.write(x, 15, oktato.neptun_kod)
+                sheet.write(x, 16, mintatanterv.kod)
+                x += 1
     book.close()
 
     output.seek(0)
