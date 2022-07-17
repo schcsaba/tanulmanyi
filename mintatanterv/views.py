@@ -181,6 +181,29 @@ def xlsx_oktatok_kurzusai_osz(request):
     x = 1
     for kurzus in kurzusok:
         for mintatanterv in kurzus.targy.mintatanterv.filter(aktualis=True):
+            switcher = {
+                'KJJBA17': 'KJJBA',
+                'KJTBA17': 'KJTBA',
+                'KJTMA17': 'KJTMA',
+                'SZAJBA17': 'SZAJBA17-L' if kurzus.munkarend.nev == 'levelező' else 'SZAJBA17-N',
+                'J09': 'JL09' if kurzus.munkarend.nev == 'levelező' else 'JN09',
+                'J12': 'JL12' if kurzus.munkarend.nev == 'levelező' else 'JN12',
+                'J13': 'JL13' if kurzus.munkarend.nev == 'levelező' else 'JN13',
+                'J14': 'JL14' if kurzus.munkarend.nev == 'levelező' else 'JN14',
+                'J15': 'JL15' if kurzus.munkarend.nev == 'levelező' else 'JN15',
+                'J17': 'JL17' if kurzus.munkarend.nev == 'levelező' else 'JN17',
+                'T13': 'TL13' if kurzus.munkarend.nev == 'levelező' else 'TN13',
+                'T15': 'TL15' if kurzus.munkarend.nev == 'levelező' else 'TN15',
+                'T16': 'TL16' if kurzus.munkarend.nev == 'levelező' else 'TN16',
+                'T17': 'TL17' if kurzus.munkarend.nev == 'levelező' else 'TN17',
+                'MT14': 'MTN14',
+                'MT14J': 'MTN14J',
+                'MT14T': 'MTN14T',
+                'MT17': 'MTN17',
+                'MT17J': 'MTN17J',
+                'MT17T': 'MTN17T',
+                }
+            mintatanterv_kod = switcher.get(mintatanterv.kod, mintatanterv.kod)
             for oktato in kurzus.oktato.all():
                 sheet.write(x, 0, kurzus.targy.targykod)
                 sheet.write(x, 1, felev)
@@ -204,7 +227,7 @@ def xlsx_oktatok_kurzusai_osz(request):
                 sheet.write(x, 13, kurzus.kurzusfelveteli_kovetelmeny_leiras)
                 sheet.write(x, 14, kurzus.munkarend.nev)
                 sheet.write(x, 15, oktato.neptun_kod)
-                sheet.write(x, 16, mintatanterv.kod)
+                sheet.write(x, 16, mintatanterv_kod)
                 x += 1
     book.close()
 
@@ -250,6 +273,29 @@ def xlsx_oktatok_kurzusai_tavasz(request):
     x = 1
     for kurzus in kurzusok:
         for mintatanterv in kurzus.targy.mintatanterv.filter(aktualis=True):
+            switcher = {
+                'KJJBA17': 'KJJBA',
+                'KJTBA17': 'KJTBA',
+                'KJTMA17': 'KJTMA',
+                'SZAJBA17': 'SZAJBA17-L' if kurzus.munkarend.nev == 'levelező' else 'SZAJBA17-N',
+                'J09': 'JL09' if kurzus.munkarend.nev == 'levelező' else 'JN09',
+                'J12': 'JL12' if kurzus.munkarend.nev == 'levelező' else 'JN12',
+                'J13': 'JL13' if kurzus.munkarend.nev == 'levelező' else 'JN13',
+                'J14': 'JL14' if kurzus.munkarend.nev == 'levelező' else 'JN14',
+                'J15': 'JL15' if kurzus.munkarend.nev == 'levelező' else 'JN15',
+                'J17': 'JL17' if kurzus.munkarend.nev == 'levelező' else 'JN17',
+                'T13': 'TL13' if kurzus.munkarend.nev == 'levelező' else 'TN13',
+                'T15': 'TL15' if kurzus.munkarend.nev == 'levelező' else 'TN15',
+                'T16': 'TL16' if kurzus.munkarend.nev == 'levelező' else 'TN16',
+                'T17': 'TL17' if kurzus.munkarend.nev == 'levelező' else 'TN17',
+                'MT14': 'MTN14',
+                'MT14J': 'MTN14J',
+                'MT14T': 'MTN14T',
+                'MT17': 'MTN17',
+                'MT17J': 'MTN17J',
+                'MT17T': 'MTN17T',
+                }
+            mintatanterv_kod = switcher.get(mintatanterv.kod, mintatanterv.kod)
             for oktato in kurzus.oktato.all():
                 sheet.write(x, 0, kurzus.targy.targykod)
                 sheet.write(x, 1, felev)
@@ -273,7 +319,7 @@ def xlsx_oktatok_kurzusai_tavasz(request):
                 sheet.write(x, 13, kurzus.kurzusfelveteli_kovetelmeny_leiras)
                 sheet.write(x, 14, kurzus.munkarend.nev)
                 sheet.write(x, 15, oktato.neptun_kod)
-                sheet.write(x, 16, mintatanterv.kod)
+                sheet.write(x, 16, mintatanterv_kod)
                 x += 1
     book.close()
 
