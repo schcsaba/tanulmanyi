@@ -26,21 +26,21 @@
     <li class="nav-item">
         <a class="nav-link" href="/szabalyzatok/">Szabályzatok</a>
     </li>
+    {% comment "Az oktatási naptárak menüpont egyelőre szükségtelen." %}
     <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown2" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Oktatási naptárak
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdown2">
-            {% comment "Az oktatók és a hallgatók órarendje menüpontok egyelőre szükségtelenek." %}
             {% if is_oktato %}
                 <a class="dropdown-item" href="/orarendek/oktatok">Oktatók órarendje</a>
             {% endif %}
             <a class="dropdown-item" href="/orarendek/hallgatok">Hallgatók órarendje</a>
-            {% endcomment %}
             <a class="dropdown-item" href="/orarendek/osz">Őszi félév</a>
             <a class="dropdown-item" href="/orarendek/tavasz">Tavaszi félév</a>
         </div>
     </li>
+    {% endcomment %}
     <li  class="nav-item">
         <a class="nav-link" href="/mintatantervek/">Mintatantervek</a>
     </li>
