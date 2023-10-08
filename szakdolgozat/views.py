@@ -26,6 +26,20 @@ def temavezetok(request):
     args['temavezetok'] = temavezetok
     return render(request, 'szakdolgozat/temavezetok.html', args)
 
+def extra_adatok_temavezetohoz(temavezeto):
+    temavezeto.szakd_targyat_felvett = HallgatoKepzesTema.objects.filter(tema__temavezeto_temakor__temavezeto__exact=temavezeto.id).filter(szakdolgozat_targyat_felvett__exact=1).count()
+    # temavezeto.kerveny = HallgatoKepzesTema.objects.filter(tema__temavezeto_temakor__temavezeto__exact=temavezeto.id).filter(kerveny__in=['kerveny_01', 'kerveny_02']).count()
+    # temavezeto.szabad_helyek = temavezeto.max_letszam - temavezeto.szakd_targyat_felvett - temavezeto.kerveny
+
+    # az MA képzésen írt szakdolgozatok két helyet foglalnak le a témavezető kvótájából,
+    # ezért az MA képzésen írt szakdolgozatok számát levonjuk a szabad helyek szamából,
+    # így az MA képzésen írt szakdolgozatok kétszer lesznek levonva ebből a számból
+    temavezeto.ma_szakdolgozatok_szama = HallgatoKepzesTema.objects.filter(tema__temavezeto_temakor__temavezeto__exact=temavezeto.id).filter(szakdolgozat_targyat_felvett__exact=1).filter(hallgato_kepzes__kepzes__kepzes_kod='MTN').count()
+    temavezeto.szabad_helyek = temavezeto.max_letszam - temavezeto.szakd_targyat_felvett - temavezeto.ma_szakdolgozatok_szama
+
+    #temavezeto.foglalt_helyek = Tema.foglalt.filter(temavezeto_temakor__temavezeto__exact=temavezeto.id).count()
+    #temavezeto.szakd_targyat_nem_vett_fel = temavezeto.foglalt_helyek - temavezeto.szakd_targyat_felvett
+    #temavezeto.cimbejelento = Tema.cimbejelento.filter(temavezeto_temakor__temavezeto__exact=temavezeto.id).count()
 
 @login_required
 def valaszthato_temavezetok(request):
@@ -33,13 +47,7 @@ def valaszthato_temavezetok(request):
     osszes_szabad_hely = 0
     #osszes_cimbejelento = 0
     for temavezeto in valaszthato_temavezetok:
-        temavezeto.szakd_targyat_felvett = HallgatoKepzesTema.objects.filter(tema__temavezeto_temakor__temavezeto__exact=temavezeto.id).filter(szakdolgozat_targyat_felvett__exact=1).count()
-        # temavezeto.kerveny = HallgatoKepzesTema.objects.filter(tema__temavezeto_temakor__temavezeto__exact=temavezeto.id).filter(kerveny__in=['kerveny_01', 'kerveny_02']).count()
-        # temavezeto.szabad_helyek = temavezeto.max_letszam - temavezeto.szakd_targyat_felvett - temavezeto.kerveny
-        temavezeto.szabad_helyek = temavezeto.max_letszam - temavezeto.szakd_targyat_felvett
-        #temavezeto.foglalt_helyek = Tema.foglalt.filter(temavezeto_temakor__temavezeto__exact=temavezeto.id).count()
-        #temavezeto.szakd_targyat_nem_vett_fel = temavezeto.foglalt_helyek - temavezeto.szakd_targyat_felvett
-        #temavezeto.cimbejelento = Tema.cimbejelento.filter(temavezeto_temakor__temavezeto__exact=temavezeto.id).count()
+        extra_adatok_temavezetohoz(temavezeto)
         osszes_szabad_hely = osszes_szabad_hely + temavezeto.szabad_helyek
         #osszes_cimbejelento = osszes_cimbejelento + temavezeto.cimbejelento
     args = {}
@@ -60,13 +68,7 @@ def aktiv_temavezetok(request):
     osszes_szabad_hely = 0
     #osszes_cimbejelento = 0
     for temavezeto in aktiv_temavezetok:
-        temavezeto.szakd_targyat_felvett = HallgatoKepzesTema.objects.filter(tema__temavezeto_temakor__temavezeto__exact=temavezeto.id).filter(szakdolgozat_targyat_felvett__exact=1).count()
-        # temavezeto.kerveny = HallgatoKepzesTema.objects.filter(tema__temavezeto_temakor__temavezeto__exact=temavezeto.id).filter(kerveny__in=['kerveny_01', 'kerveny_02']).count()
-        # temavezeto.szabad_helyek = temavezeto.max_letszam - temavezeto.szakd_targyat_felvett - temavezeto.kerveny
-        temavezeto.szabad_helyek = temavezeto.max_letszam - temavezeto.szakd_targyat_felvett
-        temavezeto.foglalt_helyek = Tema.foglalt.filter(temavezeto_temakor__temavezeto__exact=temavezeto.id).count()
-        #temavezeto.szakd_targyat_nem_vett_fel = temavezeto.foglalt_helyek - temavezeto.szakd_targyat_felvett
-        #temavezeto.cimbejelento = Tema.cimbejelento.filter(temavezeto_temakor__temavezeto__exact=temavezeto.id).count()
+        extra_adatok_temavezetohoz(temavezeto)
         osszes_szabad_hely = osszes_szabad_hely + temavezeto.szabad_helyek
         #osszes_cimbejelento = osszes_cimbejelento + temavezeto.cimbejelento
     args = {}
