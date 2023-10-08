@@ -37,7 +37,7 @@ def extra_adatok_temavezetohoz(temavezeto):
     temavezeto.ma_szakdolgozatok_szama = HallgatoKepzesTema.objects.filter(tema__temavezeto_temakor__temavezeto__exact=temavezeto.id).filter(szakdolgozat_targyat_felvett__exact=1).filter(hallgato_kepzes__kepzes__kepzes_kod='MTN').count()
     temavezeto.szabad_helyek = temavezeto.max_letszam - temavezeto.szakd_targyat_felvett - temavezeto.ma_szakdolgozatok_szama
 
-    #temavezeto.foglalt_helyek = Tema.foglalt.filter(temavezeto_temakor__temavezeto__exact=temavezeto.id).count()
+    temavezeto.foglalt_helyek = Tema.foglalt.filter(temavezeto_temakor__temavezeto__exact=temavezeto.id).count()
     #temavezeto.szakd_targyat_nem_vett_fel = temavezeto.foglalt_helyek - temavezeto.szakd_targyat_felvett
     #temavezeto.cimbejelento = Tema.cimbejelento.filter(temavezeto_temakor__temavezeto__exact=temavezeto.id).count()
 
