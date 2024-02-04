@@ -146,8 +146,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = '/home/bhf/tanulmanyi/static'
-MEDIA_ROOT = '/home/bhf/media/'
+STATIC_ROOT = '/home/bhfto/tanulmanyi/static'
+MEDIA_ROOT = '/home/bhfto/media/'
 
 TINYMCE_DEFAULT_CONFIG = {'cols': 80, 'rows': 10}
 
