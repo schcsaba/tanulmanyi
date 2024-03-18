@@ -6,7 +6,7 @@ Django==4.2.11
 django-phonenumber-field==7.3.0
 django-tinymce==3.7.1
 mysqlclient==2.2.4
-phonenumbers==8.13.31
+phonenumbers==8.13.32
 pip-autoremove==0.10.0
 python-decouple==3.8
 pytz==2024.1
