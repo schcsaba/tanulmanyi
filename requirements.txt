@@ -4,13 +4,13 @@ backports.zoneinfo==0.2.1
 beautifulsoup4==4.12.3
 Django==4.2.11
 django-phonenumber-field==7.3.0
-django-tinymce==3.7.1
+django-tinymce==4.0.0
 mysqlclient==2.2.4
-phonenumbers==8.13.32
+phonenumbers==8.13.34
 pip-autoremove==0.10.0
 python-decouple==3.8
 pytz==2024.1
 soupsieve==2.5
 sqlparse==0.4.4
-typing_extensions==4.10.0
+typing_extensions==4.11.0
 XlsxWriter==3.2.0
