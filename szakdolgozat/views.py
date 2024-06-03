@@ -93,9 +93,9 @@ def megirtesfolyamatban_pag_or_search(request):
         args['hallgato'] = hallgato
         temavezeto = request.GET.get('temavezeto')
         args['temavezeto'] = temavezeto
-        hallgatokepzestema = HallgatoKepzesTema.objects.filter(tema__cim__icontains=cim).filter(Q(hallgato_kepzes__hallgato__vezeteknev__icontains=hallgato) | Q(hallgato_kepzes__hallgato__keresztnev__icontains=hallgato) | Q(hallgato_kepzes__hallgato__neptun_kod__icontains=hallgato)).filter(Q(tema__temavezeto_temakor__temavezeto__vezeteknev__icontains=temavezeto) | Q(tema__temavezeto_temakor__temavezeto__keresztnev__icontains=temavezeto) | Q(tema__temavezeto_temakor__temavezeto__neptun_kod__icontains=temavezeto)).exclude(tema__tema_statusz__exact=4).order_by('-kezdet', '-veg')
+        hallgatokepzestema = HallgatoKepzesTema.objects.filter(tema__cim__icontains=cim).filter(Q(hallgato_kepzes__hallgato__vezeteknev__icontains=hallgato) | Q(hallgato_kepzes__hallgato__keresztnev__icontains=hallgato) | Q(hallgato_kepzes__hallgato__neptun_kod__icontains=hallgato)).filter(Q(tema__temavezeto_temakor__temavezeto__vezeteknev__icontains=temavezeto) | Q(tema__temavezeto_temakor__temavezeto__keresztnev__icontains=temavezeto) | Q(tema__temavezeto_temakor__temavezeto__neptun_kod__icontains=temavezeto)).exclude(Q(tema__tema_statusz__exact=2),Q(veg__isnull=False)).order_by('-kezdet', '-veg')
     else:
-        hallgatokepzestema = HallgatoKepzesTema.objects.exclude(tema__tema_statusz__exact=4).order_by('-kezdet', '-veg')
+        hallgatokepzestema = HallgatoKepzesTema.objects.exclude(Q(tema__tema_statusz__exact=2),Q(veg__isnull=False)).order_by('-kezdet', '-veg')
 
     paginator = Paginator(hallgatokepzestema, 20)
     args['paginator'] = paginator
