@@ -154,3 +154,13 @@ def megirtak_jegyenkent(request):
     args = {}
     args['erdemjegyek'] = ErdemJegy.objects.all()
     return render(request, 'szakdolgozat/megirtak_jegyenkent.html', args)
+
+@login_required
+def kurzusok(request):
+    args = {}
+    if Beallitas.objects.get(nev='kurzusok'):
+        kurzusok = Beallitas.objects.get(nev='kurzusok')
+        args['kurzusok'] = kurzusok.szoveg
+    else:
+        args['kurzusok'] = ''
+    return render(request, 'szakdolgozat/kurzusok.html', args)

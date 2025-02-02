@@ -1,0 +1,11 @@
+{% extends "tanulmanyi/home.html" %}
+{% block title %}
+Témavezetők és témaköreik
+{% endblock %}
+{% block content %}
+
+{% autoescape off %}
+{{ kurzusok }}
+{% endautoescape %}
+
+{% endblock %}
