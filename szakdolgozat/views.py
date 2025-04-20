@@ -48,7 +48,7 @@ def valaszthato_temavezetok(request):
     #osszes_cimbejelento = 0
     for temavezeto in valaszthato_temavezetok:
         extra_adatok_temavezetohoz(temavezeto)
-        osszes_szabad_hely = osszes_szabad_hely + temavezeto.szabad_helyek
+        osszes_szabad_hely = osszes_szabad_hely + (temavezeto.szabad_helyek if temavezeto.szabad_helyek > 0 else 0)
         #osszes_cimbejelento = osszes_cimbejelento + temavezeto.cimbejelento
     args = {}
     args['osszes_szabad_hely'] = osszes_szabad_hely
@@ -69,7 +69,7 @@ def aktiv_temavezetok(request):
     #osszes_cimbejelento = 0
     for temavezeto in aktiv_temavezetok:
         extra_adatok_temavezetohoz(temavezeto)
-        osszes_szabad_hely = osszes_szabad_hely + temavezeto.szabad_helyek
+        osszes_szabad_hely = osszes_szabad_hely + (temavezeto.szabad_helyek if temavezeto.szabad_helyek > 0 else 0)
         #osszes_cimbejelento = osszes_cimbejelento + temavezeto.cimbejelento
     args = {}
     args['osszes_szabad_hely'] = osszes_szabad_hely
