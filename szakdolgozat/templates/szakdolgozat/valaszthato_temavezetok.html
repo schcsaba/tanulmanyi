@@ -8,13 +8,13 @@
     {{ temavalasztas_menete }}
 {% endautoescape %}
 
-<hr>
+<!--<hr>
 
 {% if valaszthato_temavezetok.count > 0 %}
     <!--<h3>Összes szabad hely: {{ osszes_szabad_hely }} | Kint lévő címbejelentők: {{ osszes_cimbejelento }}</h3>-->
     <h3>Összes szabad hely: {{ osszes_szabad_hely }}</h3>
     <!--<h4>Letöltés: <a href="/szakdolgozatok/temavezetok/letoltes/">DOCX</a></h4>-->
-    <!--<div class="accordion" id="accordion">
+    <div class="accordion" id="accordion">
         {% for temavezeto in valaszthato_temavezetok %}
             <div class="card">
                 <div class="card-header" id="card{{ forloop.counter }}-heading">
@@ -166,8 +166,8 @@
                 </div>
             </div>
         {% endfor %}
-    </div>-->
+    </div>
 {% else %}
     <p>Az adatbázisban nincsenek választható témavezetők.</p>
-{% endif %}
+{% endif %}-->
 {% endblock %}
