@@ -1,5 +1,7 @@
 from django.contrib import admin
 from szakdolgozat.models import Temakor, Temavezeto, TemavezetoTemakor, TemaStatusz, Tema, Hallgato, Statusz, Tagozat, Kepzes, HallgatoKepzes, ErdemJegy, HallgatoKepzesTema, Beallitas
+from django.utils.safestring import mark_safe
+from tinymce.widgets import TinyMCE
 
 
 class TemakorAdmin(admin.ModelAdmin):
@@ -111,6 +113,28 @@ class HallgatoKepzesTemaAdmin(admin.ModelAdmin):
     szakdolgozat_targyat_nem_vett_fel.short_description = 'Állítsd a kiválasztott "Hallgató szakdolgozat címe képzésen" sor(ok) esetében a "Szakdolgozat tárgyat felvett" mezőt "Hamis"-ra'
 
 
+class BeallitasAdmin(admin.ModelAdmin):
+    class Media:
+        js = ('/static/tinymce/tinymce.min.js',)
+        css = {
+            'all': ('/static/tinymce/skins/ui/oxide/skin.min.css',)
+        }
+
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        if db_field.name == 'szoveg':
+            kwargs['widget'] = TinyMCE(
+                attrs={'cols': 80, 'rows': 30},
+                mce_attrs={
+                    'width': '100%',
+                    'height': 400,
+                    'resize': 'both',
+                    'plugins': 'link image code',
+                    'toolbar': 'undo redo | styleselect | bold italic | alignleft aligncenter alignright | link image | code',
+                }
+            )
+        return super().formfield_for_dbfield(db_field, **kwargs)
+
+
 admin.site.register(Temakor, TemakorAdmin)
 admin.site.register(Temavezeto, TemavezetoAdmin)
 admin.site.register(TemavezetoTemakor, TemavezetoTemakorAdmin)
@@ -123,4 +147,4 @@ admin.site.register(Kepzes)
 admin.site.register(HallgatoKepzes, HallgatoKepzesAdmin)
 admin.site.register(ErdemJegy)
 admin.site.register(HallgatoKepzesTema, HallgatoKepzesTemaAdmin)
-admin.site.register(Beallitas)
+admin.site.register(Beallitas, BeallitasAdmin)
