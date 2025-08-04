@@ -54,7 +54,7 @@ class ElofeltetelInline(admin.TabularInline):
 
 class TargyAdmin(admin.ModelAdmin):
     search_fields = ('targykod', 'targynev')
-    filter_horizontal = ('nagytargy', 'elofeltetel_targy', 'ekvivalens_targy', 'mintatanterv')
+    filter_horizontal = ('nagytargy', 'elofeltetel_targy', 'ekvivalens_targy')
     list_filter = ('kredit', 'kovetelmeny', 'kurzustipus', 'targymunkarend__vizsgatipus', 'nagytargy', 'oktato', 'elofeltetel_targy')
     list_display = ('targykod', 'targynev', 'kredit', 'kovetelmeny')
     inlines = [
