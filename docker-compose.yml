@@ -1,0 +1,46 @@
+# version: '3.8'  # Version is obsolete in newer Docker Compose
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: tanulmanyi_db
+    restart: unless-stopped
+    env_file:
+      - .env.dev
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - tanulmanyi_network
+
+  web:
+    build: .
+    container_name: tanulmanyi_web
+    restart: unless-stopped
+    volumes:
+      - .:/app
+      - static_volume:/app/static
+      - media_volume:/app/media
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.dev
+    depends_on:
+      - db
+    networks:
+      - tanulmanyi_network
+
+volumes:
+  mysql_data:
+  static_volume:
+  media_volume:
+
+networks:
+  tanulmanyi_network:
+    driver: bridge

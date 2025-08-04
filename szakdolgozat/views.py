@@ -54,10 +54,10 @@ def valaszthato_temavezetok(request):
     #args['osszes_szabad_hely'] = osszes_szabad_hely
     #args['osszes_cimbejelento'] = osszes_cimbejelento
     #args['valaszthato_temavezetok'] = valaszthato_temavezetok
-    if Beallitas.objects.get(nev='temavalasztas_menete'):
+    try:
         temavalasztas_menete = Beallitas.objects.get(nev='temavalasztas_menete')
         args['temavalasztas_menete'] = temavalasztas_menete.szoveg
-    else:
+    except Beallitas.DoesNotExist:
         args['temavalasztas_menete'] = ''
     return render(request, 'szakdolgozat/valaszthato_temavezetok.html', args)
 
@@ -75,10 +75,10 @@ def aktiv_temavezetok(request):
     args['osszes_szabad_hely'] = osszes_szabad_hely
     #args['osszes_cimbejelento'] = osszes_cimbejelento
     args['aktiv_temavezetok'] = aktiv_temavezetok
-    if Beallitas.objects.get(nev='temavalasztas_menete'):
+    try:
         temavalasztas_menete = Beallitas.objects.get(nev='temavalasztas_menete')
         args['temavalasztas_menete'] = temavalasztas_menete.szoveg
-    else:
+    except Beallitas.DoesNotExist:
         args['temavalasztas_menete'] = ''
     return render(request, 'szakdolgozat/aktiv_temavezetok.html', args)
 
@@ -158,10 +158,10 @@ def megirtak_jegyenkent(request):
 @login_required
 def kurzusok(request):
     args = {}
-    if Beallitas.objects.get(nev='kurzusok'):
+    try:
         kurzusok = Beallitas.objects.get(nev='kurzusok')
         args['kurzusok'] = kurzusok.szoveg
-    else:
+    except Beallitas.DoesNotExist:
         args['kurzusok'] = ''
     return render(request, 'szakdolgozat/kurzusok.html', args)
 

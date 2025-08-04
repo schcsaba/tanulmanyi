@@ -1,6 +1,6 @@
 asgiref==3.8.1
 Babel==2.15.0
-backports.zoneinfo==0.2.1
+# backports.zoneinfo==0.2.1  # Not needed for Python 3.11+
 beautifulsoup4==4.12.3
 Django==4.2.13
 django-phonenumber-field==7.3.0

@@ -41,7 +41,10 @@ def oktato_orarendje(request, oktato_id):
             orarendek.append(orarend.prettify())
         args['oktato_neve'] = oktatok[int(oktato_id)].string
         args['orarendek'] = orarendek
-        args['szunet'] = int(Beallitas.objects.get(nev='Szünet').ertek)
+        try:
+            args['szunet'] = int(Beallitas.objects.get(nev='Szünet').ertek)
+        except (Beallitas.DoesNotExist, ValueError):
+            args['szunet'] = 0
     else:
         args['visszajelzes'] = 'Az órarend még nem érhető el.'
         args['title'] = 'Türelmét kérjük!'
@@ -89,7 +92,10 @@ def evfolyam_orarendje(request, evfolyam_id):
 
         args['evfolyam_neve'] = evfolyamok[int(evfolyam_id)].a.string
         args['orarendek'] = orarendek
-        args['szunet'] = int(Beallitas.objects.get(nev='Szünet').ertek)
+        try:
+            args['szunet'] = int(Beallitas.objects.get(nev='Szünet').ertek)
+        except (Beallitas.DoesNotExist, ValueError):
+            args['szunet'] = 0
         args['megjegyzesek'] = megjegyzesek
 
     else:
