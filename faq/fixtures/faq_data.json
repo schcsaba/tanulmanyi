@@ -1,0 +1,92 @@
+[
+  {
+    "model": "faq.kerdes",
+    "pk": 1,
+    "fields": {
+      "kerdes": "Hogyan tudok beiratkozni egy kurzusra?",
+      "valasz": "<p>A kurzusokra való beiratkozás a Neptun rendszeren keresztül történik. A beiratkozási időszakokban lépj be a Neptun rendszerbe, és a <strong>Tárgyak</strong> menüpont alatt kereshetsz a kívánt kurzusokra. Figyelj a beiratkozási határidőkre és az előfeltételekre!</p>",
+      "publikalt": true
+    }
+  },
+  {
+    "model": "faq.kerdes",
+    "pk": 2,
+    "fields": {
+      "kerdes": "Mikor vannak a vizsgaidőszakok?",
+      "valasz": "<p>A vizsgaidőszakok általában a következők:</p><ul><li><strong>Őszi vizsgaidőszak:</strong> december közepétől január végéig</li><li><strong>Tavaszi vizsgaidőszak:</strong> május közepétől június végéig</li><li><strong>Augusztusi pótló időszak:</strong> augusztus közepétől szeptember elejéig</li></ul><p>A pontos dátumokat mindig a tanulmányi hivatal közli a félév elején.</p>",
+      "publikalt": true
+    }
+  },
+  {
+    "model": "faq.kerdes",
+    "pk": 3,
+    "fields": {
+      "kerdes": "Hogyan kell leadni a szakdolgozatot?",
+      "valasz": "<p>A szakdolgozat leadásának menete:</p><ol><li>Konzultálj a témavezetőddel a kész dolgozatról</li><li>Töltsd fel a dolgozatot PDF formátumban a tanulmányi rendszerbe</li><li>Add le a nyomtatott példányt a tanulmányi hivatalban</li><li>Jelentkezz a szakdolgozat védésre</li></ol><p><em>Figyelem:</em> A leadási határidő általában a védés előtt legalább 2 héttel!</p>",
+      "publikalt": true
+    }
+  },
+  {
+    "model": "faq.kerdes",
+    "pk": 4,
+    "fields": {
+      "kerdes": "Mit tegyek, ha elfelejtem a Neptun jelszavamat?",
+      "valasz": "<p>Ha elfelejted a Neptun jelszavadat:</p><ul><li>Próbáld meg a <strong>\"Elfelejtett jelszó\"</strong> funkciót a bejelentkezési oldalon</li><li>Ha ez nem működik, fordulj a rendszeradminisztrátorhoz személyesen</li><li>Vidd magaddal a diákigazolványodat és egy személyi okmányt</li></ul><p>Biztonság érdekében rendszeresen változtasd meg a jelszavadat!</p>",
+      "publikalt": true
+    }
+  },
+  {
+    "model": "faq.kerdes",
+    "pk": 5,
+    "fields": {
+      "kerdes": "Lehet-e módosítani a leadott kurzusbejelentkezést?",
+      "valasz": "<p>A kurzusbejelentkezés módosítása korlátozottan lehetséges:</p><ul><li><strong>Módosítási időszakban:</strong> szabadon módosíthatsz (általában a félév első hetei)</li><li><strong>Módosítási időszak után:</strong> csak indokolt esetben, tanulmányi hivatal engedélyével</li><li><strong>Leadási határidő után:</strong> már nem lehetséges változtatni</li></ul><p>Mindig figyelj a pontos határidőkre!</p>",
+      "publikalt": true
+    }
+  },
+  {
+    "model": "faq.kerdes",
+    "pk": 6,
+    "fields": {
+      "kerdes": "Hogyan tudok ösztöndíjra pályázni?",
+      "valasz": "<p>Az ösztöndíj pályázatok menete:</p><ol><li>Kövesd a tanulmányi hivatal hirdetményeit</li><li>Töltsd ki a pályázati űrlapot határidőre</li><li>Csatold a szükséges mellékleteket (bizonyítványok, jövedelemigazolás, stb.)</li><li>Add le személyesen vagy online a megadott módon</li></ol><p><strong>Típusok:</strong> tanulmányi ösztöndíj, szociális ösztöndíj, demonstrátori ösztöndíj.</p>",
+      "publikalt": true
+    }
+  },
+  {
+    "model": "faq.kerdes",
+    "pk": 7,
+    "fields": {
+      "kerdes": "Mi a teendő, ha nem sikerül teljesíteni egy tárgyat?",
+      "valasz": "<p>Ha nem sikerül teljesíteni egy tárgyat:</p><ul><li><strong>Javítóvizsga:</strong> általában lehetséges az ugyanazon vizsgaidőszakban</li><li><strong>Ismétlés:</strong> a tárgyat a következő félévben újra fel kell venni</li><li><strong>Kreditkomplexum:</strong> figyelj arra, hogy elegendő kreditet szerezz a félév végére</li></ul><p>Konzultálj a tanulmányi referenseddel a további lehetőségekről!</p>",
+      "publikalt": true
+    }
+  },
+  {
+    "model": "faq.kerdes",
+    "pk": 8,
+    "fields": {
+      "kerdes": "Hogyan kérhetek igazolást a tanulmányaimról?",
+      "valasz": "<p>Tanulmányi igazolások típusai és igénylése:</p><ul><li><strong>Hallgatói jogviszony igazolása:</strong> Neptunból letölthető</li><li><strong>Részletes leckekönyv kivonat:</strong> tanulmányi hivatal</li><li><strong>Hivatalos fordítás:</strong> külön igénylendő</li></ul><p>Az igénylés általában 1-3 munkanap alatt teljesül. Egyes igazolások díjkötelesek lehetnek.</p>",
+      "publikalt": true
+    }
+  },
+  {
+    "model": "faq.kerdes",
+    "pk": 9,
+    "fields": {
+      "kerdes": "Mikor és hogyan lehet konzultálni az oktatókkal?",
+      "valasz": "<p>Oktatói konzultációk:</p><ul><li><strong>Fogadóórák:</strong> az oktatók által meghirdetett időpontokban</li><li><strong>Email:</strong> szakmai kérdésekkel fordulhatsz az oktatókhoz</li><li><strong>Online konzultáció:</strong> Teams vagy más platformon</li></ul><p>A fogadóórákat mindig előre egyeztesd le! Az oktatók elérhetőségei megtalálhatók a kar honlapján.</p>",
+      "publikalt": true
+    }
+  },
+  {
+    "model": "faq.kerdes",
+    "pk": 10,
+    "fields": {
+      "kerdes": "Mit kell tudni a gyakorlati helyekről?",
+      "valasz": "<p>Gyakorlati helyek szabályai:</p><ul><li><strong>Jelentkezés:</strong> általában a gyakorlat előtti félévben</li><li><strong>Követelmények:</strong> minimális kreditszám és átlag</li><li><strong>Jelentkezés menete:</strong> online felületen vagy papír alapon</li><li><strong>Értékelés:</strong> a gyakorlati hely vezetője és a felelős oktató</li></ul><p>Részletes információkat a tanulmányi hivatal ad!</p>",
+      "publikalt": false
+    }
+  }
+]
