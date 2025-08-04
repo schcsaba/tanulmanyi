@@ -1,6 +1,6 @@
 # Tanulmanyi Django Application - Docker Commands
 
-.PHONY: help dev prod dev-up prod-up dev-down prod-down logs clean
+.PHONY: help dev prod dev-up prod-up dev-down prod-down logs clean test test-faq test-szabalyzat test-verbose test-keepdb test-failfast test-coverage
 
 help: ## Show this help message
 	@echo "Available commands:"
@@ -70,6 +70,34 @@ superuser: ## Create superuser in development
 
 prod-superuser: ## Create superuser in production
 	docker-compose -f docker-compose.prod.yml exec web python manage.py createsuperuser
+
+##@ Testing Commands
+test: ## Run all tests in development
+	docker-compose exec web python manage.py test
+
+test-verbose: ## Run all tests with verbose output
+	docker-compose exec web python manage.py test --verbosity=2
+
+test-faq: ## Run FAQ module tests only
+	docker-compose exec web python manage.py test faq.tests
+
+test-szabalyzat: ## Run szabalyzat module tests only
+	docker-compose exec web python manage.py test szabalyzat.tests
+
+test-keepdb: ## Run all tests keeping the test database (faster for repeated runs)
+	docker-compose exec web python manage.py test --keepdb
+
+test-failfast: ## Run tests and stop on first failure
+	docker-compose exec web python manage.py test --failfast
+
+test-coverage: ## Run tests with coverage report (if coverage installed)
+	@echo "Running tests with coverage..."
+	@docker-compose exec web bash -c "if command -v coverage >/dev/null 2>&1; then \
+		coverage run --source='.' manage.py test && coverage report -m; \
+	else \
+		echo '⚠️  Coverage not installed. Run: pip install coverage'; \
+		python manage.py test; \
+	fi"
 
 ##@ Cleanup Commands
 clean: ## Stop containers and remove volumes
