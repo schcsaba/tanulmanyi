@@ -1,0 +1,137 @@
+[
+  {
+    "model": "szabalyzat.szabalyzat",
+    "pk": 1,
+    "fields": {
+      "nev": "Tanulmányi és Vizsgaszabályzat",
+      "szabalyzatfajl": "szabalyzatok/tanulmanyi_es_vizsgaszabalyzat_2024.pdf",
+      "csak_oktatoknak": false
+    }
+  },
+  {
+    "model": "szabalyzat.szabalyzat",
+    "pk": 2,
+    "fields": {
+      "nev": "Hallgatói Követelményrendszer",
+      "szabalyzatfajl": "szabalyzatok/hallgatoi_kovetelmenyrendszer.pdf",
+      "csak_oktatoknak": false
+    }
+  },
+  {
+    "model": "szabalyzat.szabalyzat",
+    "pk": 3,
+    "fields": {
+      "nev": "Szakdolgozat Készítési Útmutató",
+      "szabalyzatfajl": "szabalyzatok/szakdolgozat_keszitesi_utmutato.pdf",
+      "csak_oktatoknak": false
+    }
+  },
+  {
+    "model": "szabalyzat.szabalyzat",
+    "pk": 4,
+    "fields": {
+      "nev": "Felvételi és Jelentkezési Szabályzat",
+      "szabalyzatfajl": "szabalyzatok/felveteli_es_jelentkezesi_szabalyzat.pdf",
+      "csak_oktatoknak": false
+    }
+  },
+  {
+    "model": "szabalyzat.szabalyzat",
+    "pk": 5,
+    "fields": {
+      "nev": "Ösztöndíj és Támogatási Rendszer",
+      "szabalyzatfajl": "szabalyzatok/osztondij_es_tamogatasi_rendszer.pdf",
+      "csak_oktatoknak": false
+    }
+  },
+  {
+    "model": "szabalyzat.szabalyzat",
+    "pk": 6,
+    "fields": {
+      "nev": "GDPR és Adatvédelmi Szabályzat",
+      "szabalyzatfajl": "szabalyzatok/gdpr_es_adatvedelmi_szabalyzat.pdf",
+      "csak_oktatoknak": false
+    }
+  },
+  {
+    "model": "szabalyzat.szabalyzat",
+    "pk": 7,
+    "fields": {
+      "nev": "Oktatói Etikai Kódex",
+      "szabalyzatfajl": "szabalyzatok/oktatoi_etikai_kodex.pdf",
+      "csak_oktatoknak": true
+    }
+  },
+  {
+    "model": "szabalyzat.szabalyzat",
+    "pk": 8,
+    "fields": {
+      "nev": "Kutatási és Fejlesztési Irányelvek",
+      "szabalyzatfajl": "szabalyzatok/kutatasi_es_fejlesztesi_iranyelvek.pdf",
+      "csak_oktatoknak": true
+    }
+  },
+  {
+    "model": "szabalyzat.szabalyzat",
+    "pk": 9,
+    "fields": {
+      "nev": "Minőségbiztosítási Rendszer",
+      "szabalyzatfajl": "szabalyzatok/minosegbiztositasi_rendszer.pdf",
+      "csak_oktatoknak": true
+    }
+  },
+  {
+    "model": "szabalyzat.szabalyzat",
+    "pk": 10,
+    "fields": {
+      "nev": "Oktatói Értékelési Rendszer",
+      "szabalyzatfajl": "szabalyzatok/oktatoi_ertekelesi_rendszer.pdf",
+      "csak_oktatoknak": true
+    }
+  },
+  {
+    "model": "szabalyzat.szabalyzat",
+    "pk": 11,
+    "fields": {
+      "nev": "Hallgatói Önkormányzat Szabályzata",
+      "szabalyzatfajl": "szabalyzatok/hallgatoi_onkormanyzat_szabalyzata.pdf",
+      "csak_oktatoknak": false
+    }
+  },
+  {
+    "model": "szabalyzat.szabalyzat",
+    "pk": 12,
+    "fields": {
+      "nev": "Gyakorlati Képzés Szabályzata",
+      "szabalyzatfajl": "szabalyzatok/gyakorlati_kepzes_szabalyzata.pdf",
+      "csak_oktatoknak": false
+    }
+  },
+  {
+    "model": "szabalyzat.szabalyzat",
+    "pk": 13,
+    "fields": {
+      "nev": "Informatikai Biztonsági Szabályzat",
+      "szabalyzatfajl": "szabalyzatok/informatikai_biztonsagi_szabalyzat.pdf",
+      "csak_oktatoknak": false
+    }
+  },
+  {
+    "model": "szabalyzat.szabalyzat",
+    "pk": 14,
+    "fields": {
+      "nev": "Fegyelmi Eljárás Szabályai",
+      "szabalyzatfajl": "szabalyzatok/fegyelmi_eljaras_szabalyai.pdf",
+      "csak_oktatoknak": true
+    }
+  },
+  {
+    "model": "szabalyzat.szabalyzat",
+    "pk": 15,
+    "fields": {
+      "nev": "Nemzetközi Kapcsolatok Szabályzata",
+      "szabalyzatfajl": "szabalyzatok/nemzetkozi_kapcsolatok_szabalyzata.pdf",
+      "csak_oktatoknak": false
+    }
+  }
+]
