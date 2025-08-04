@@ -7,7 +7,7 @@ from faq.models import Kerdes
 class KerdesModelTests(TestCase):
     """Test cases for the Kerdes model"""
     
-    fixtures = ['faq_data.json']
+    fixtures = ['faq_data']
     
     def setUp(self):
         """Set up test data"""
@@ -66,7 +66,7 @@ class KerdesModelTests(TestCase):
 class FaqViewTests(TestCase):
     """Test cases for FAQ views"""
     
-    fixtures = ['faq_data.json']
+    fixtures = ['faq_data']
     
     def setUp(self):
         """Set up test client and user"""
@@ -140,7 +140,7 @@ class FaqViewTests(TestCase):
 class FaqFixturesTests(TestCase):
     """Test cases for FAQ fixtures integration"""
     
-    fixtures = ['faq_data.json']
+    fixtures = ['faq_data']
     
     def test_fixtures_loaded(self):
         """Test that fixtures are properly loaded"""
@@ -190,7 +190,7 @@ class FaqFixturesTests(TestCase):
 class FaqIntegrationTests(TestCase):
     """Integration tests for the FAQ module"""
     
-    fixtures = ['faq_data.json']
+    fixtures = ['faq_data']
     
     def setUp(self):
         """Set up test client and user"""
