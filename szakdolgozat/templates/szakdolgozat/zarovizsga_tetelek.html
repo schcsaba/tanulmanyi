@@ -1,0 +1,11 @@
+{% extends "tanulmanyi/home.html" %}
+{% block title %}
+Záróvizsga tételek
+{% endblock %}
+{% block content %}
+
+{% autoescape off %}
+{{ zarovizsga_tetelek }}
+{% endautoescape %}
+
+{% endblock %}

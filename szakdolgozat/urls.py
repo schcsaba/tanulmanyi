@@ -11,4 +11,5 @@ urlpatterns = [
     path('megirtak_jegyenkent/', views.megirtak_jegyenkent, name='megirtak_jegyenkent'),
     path('szakdolgozatrepozitorium/', views.szakdolgozatrepozitorium, name='szakdolgozatrepozitorium'),
     path('kurzusok/', views.kurzusok, name='szakdolgozat_kurzusok'),
+    path('zarovizsga_tetelek/', views.zarovizsga_tetelek, name='zarovizsga_tetelek'),
 ]

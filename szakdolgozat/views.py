@@ -164,3 +164,13 @@ def kurzusok(request):
     else:
         args['kurzusok'] = ''
     return render(request, 'szakdolgozat/kurzusok.html', args)
+
+@login_required
+def zarovizsga_tetelek(request):
+    args = {}
+    try:
+        zarovizsga_tetelek = Beallitas.objects.get(nev='zarovizsga_tetelek')
+        args['zarovizsga_tetelek'] = zarovizsga_tetelek.szoveg
+    except Beallitas.DoesNotExist:
+        args['zarovizsga_tetelek'] = ''
+    return render(request, 'szakdolgozat/zarovizsga_tetelek.html', args)
