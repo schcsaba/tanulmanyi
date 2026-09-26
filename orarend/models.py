@@ -2,7 +2,7 @@ from django.db import models
 
 
 class Beallitas(models.Model):
-    nev = models.CharField(max_length=200, verbose_name='név', unique='True')
+    nev = models.CharField(max_length=200, verbose_name='név', unique=True)
     ertek = models.CharField(max_length=200, verbose_name='érték')
     magyarazat = models.CharField(max_length=400, verbose_name='magyarázat', blank=True, null=True)
 

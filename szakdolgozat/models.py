@@ -6,7 +6,7 @@ from tinymce.models import HTMLField
 
 
 class Beallitas(models.Model):
-    nev = models.CharField(max_length=200, verbose_name='név', unique='True')
+    nev = models.CharField(max_length=200, verbose_name='név', unique=True)
     ertek = models.CharField(max_length=200, blank=True, null=True, verbose_name='érték')
     szoveg = HTMLField(max_length=100000, blank=True, null=True, verbose_name='szöveg')
     magyarazat = models.CharField(max_length=400, verbose_name='magyarázat', blank=True, null=True)
@@ -21,7 +21,7 @@ class Beallitas(models.Model):
 
 
 class Temakor(models.Model):
-    cim = models.CharField(max_length=255, unique='True', verbose_name='cím')
+    cim = models.CharField(max_length=255, unique=True, verbose_name='cím')
 
     class Meta:
         verbose_name = 'témakör'
@@ -29,7 +29,7 @@ class Temakor(models.Model):
         ordering = ['cim']
 
     def __str__(self):
-        return re.sub(r'^(.{75}).*$', '\g<1>...', self.cim)
+        return re.sub(r'^(.{75}).*$', r'\g<1>...', self.cim)
 
 
 class Temavezeto(models.Model):
@@ -44,7 +44,7 @@ class Temavezeto(models.Model):
     avatott_nev = models.CharField(max_length=100, blank=True, verbose_name='avatott név')
     valaszthato = models.BooleanField(verbose_name='választható', default=False)
     inaktiv = models.BooleanField(verbose_name='inaktív', default=False)
-    sorszam = models.IntegerField(verbose_name='sorszám', blank=True, null=True, unique='True')
+    sorszam = models.IntegerField(verbose_name='sorszám', blank=True, null=True, unique=True)
 
     class Meta:
         verbose_name = 'témavezető'
@@ -129,7 +129,7 @@ class TemavezetoTemakor(models.Model):
 
 
 class TemaStatusz(models.Model):
-    nev = models.CharField(max_length=50, unique='True', verbose_name='név')
+    nev = models.CharField(max_length=50, unique=True, verbose_name='név')
 
     class Meta:
         verbose_name = 'cím státusza'
@@ -158,7 +158,7 @@ class CimbejelentoTemaManager(models.Manager):
 
 
 class Tema(models.Model):
-    cim = models.CharField(max_length=255, unique='True', verbose_name='cím')
+    cim = models.CharField(max_length=255, unique=True, verbose_name='cím')
     idegen_nyelv_szukseges = models.CharField(max_length=500, blank=True, verbose_name='idegen nyelv szükséges')
     megjegyzes = models.CharField(max_length=500, blank=True, verbose_name='megjegyzés')
     temavezeto_temakor = models.ForeignKey(TemavezetoTemakor, on_delete=models.CASCADE, verbose_name='témavezető témaköre')
@@ -175,7 +175,7 @@ class Tema(models.Model):
         ordering = ['temavezeto_temakor', 'cim']
 
     def __str__(self):
-        return '%s --- %s' % (self.temavezeto_temakor, re.sub(r'^(.{75}).*$', '\g<1>...', self.cim))
+        return '%s --- %s' % (self.temavezeto_temakor, re.sub(r'^(.{75}).*$', r'\g<1>...', self.cim))
 
 
 class Hallgato(models.Model):
@@ -195,7 +195,7 @@ class Hallgato(models.Model):
 
 
 class Statusz(models.Model):
-    nev = models.CharField(max_length=30, unique='True', verbose_name='név')
+    nev = models.CharField(max_length=30, unique=True, verbose_name='név')
 
     class Meta:
         verbose_name = 'státusz'
@@ -207,7 +207,7 @@ class Statusz(models.Model):
 
 
 class Tagozat(models.Model):
-    nev = models.CharField(max_length=20, unique='True', verbose_name='név')
+    nev = models.CharField(max_length=20, unique=True, verbose_name='név')
 
     class Meta:
         verbose_name = 'tagozat'
@@ -219,7 +219,7 @@ class Tagozat(models.Model):
 
 
 class Kepzes(models.Model):
-    kepzes_kod = models.CharField(max_length=10, unique='True', verbose_name='képzés kód')
+    kepzes_kod = models.CharField(max_length=10, unique=True, verbose_name='képzés kód')
     kepzes_nev = models.CharField(max_length=50, verbose_name='képzés név')
     tagozat = models.ForeignKey(Tagozat, on_delete=models.CASCADE, verbose_name='tagozat')
     hallgatok = models.ManyToManyField(Hallgato, through='HallgatoKepzes', verbose_name='hallgatók')
@@ -253,8 +253,8 @@ class HallgatoKepzes(models.Model):
 
 
 class ErdemJegy(models.Model):
-    nev = models.CharField(max_length=15, unique='True', verbose_name='név')
-    ertek = models.IntegerField(unique='True', verbose_name='érték')
+    nev = models.CharField(max_length=15, unique=True, verbose_name='név')
+    ertek = models.IntegerField(unique=True, verbose_name='érték')
 
     class Meta:
         verbose_name = 'érdemjegy'

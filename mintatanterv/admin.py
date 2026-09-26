@@ -57,6 +57,7 @@ class TargyAdmin(admin.ModelAdmin):
     filter_horizontal = ('nagytargy', 'elofeltetel_targy', 'ekvivalens_targy')
     list_filter = ('kredit', 'kovetelmeny', 'kurzustipus', 'targymunkarend__vizsgatipus', 'nagytargy', 'oktato', 'elofeltetel_targy')
     list_display = ('targykod', 'targynev', 'kredit', 'kovetelmeny')
+    list_select_related = ('kovetelmeny',)
     inlines = [
         ElofeltetelInline,
         TargyMunkarendInline,
@@ -75,82 +76,27 @@ class TargyAdmin(admin.ModelAdmin):
     )
 
 
+
+def _max_letszam_akcio(letszam):
+    rag = 'ra' if letszam in (20, 30, 60) else 're'
+
+    def akcio(modeladmin, request, queryset):
+        rows_updated = queryset.update(max_letszam=letszam)
+        modeladmin.message_user(request, '%s kurzus létszáma lett %s-%s állítva.' % (rows_updated, letszam, rag))
+    akcio.__name__ = 'max_letszam_%d' % letszam
+    akcio.short_description = 'Állítsd a kiválasztott kurzusok maximális létszámát %s-%s' % (letszam, rag)
+    return akcio
+
+
+MAX_LETSZAM_AKCIOK = [_max_letszam_akcio(letszam) for letszam in range(5, 75, 5)]
+
+
 class TargyMunkarendAdmin(admin.ModelAdmin):
     search_fields = ('targy__targykod', 'targy__targynev')
     filter_horizontal = ('oktato',)
     list_filter = ('munkarend', 'vizsgatipus', 'oktato', 'max_letszam', 'kurzustipus')
     list_display = ('targy', 'kurzuskod', 'munkarend', 'orarend_oraszam', 'max_hianyzas', 'max_letszam', 'nem_indul')
-    actions = ['max_letszam_5', 'max_letszam_10', 'max_letszam_15', 'max_letszam_20', 'max_letszam_25', 'max_letszam_30', 'max_letszam_35', 'max_letszam_40', 'max_letszam_45', 'max_letszam_50', 'max_letszam_55', 'max_letszam_60', 'max_letszam_65', 'max_letszam_70', 'nem_indul', 'indul']
-
-    def max_letszam_5(self, request, queryset):
-        rows_updated = queryset.update(max_letszam=5)
-        self.message_user(request, '%s kurzus létszáma lett 5-re állítva.' %rows_updated)
-    max_letszam_5.short_description = 'Állítsd a kiválasztott kurzusok maximális létszámát 5-re'
-
-    def max_letszam_10(self, request, queryset):
-        rows_updated = queryset.update(max_letszam=10)
-        self.message_user(request, '%s kurzus létszáma lett 10-re állítva.' %rows_updated)
-    max_letszam_10.short_description = 'Állítsd a kiválasztott kurzusok maximális létszámát 10-re'
-
-    def max_letszam_15(self, request, queryset):
-        rows_updated = queryset.update(max_letszam=15)
-        self.message_user(request, '%s kurzus létszáma lett 15-re állítva.' %rows_updated)
-    max_letszam_15.short_description = 'Állítsd a kiválasztott kurzusok maximális létszámát 15-re'
-
-    def max_letszam_20(self, request, queryset):
-        rows_updated = queryset.update(max_letszam=20)
-        self.message_user(request, '%s kurzus létszáma lett 20-ra állítva.' %rows_updated)
-    max_letszam_20.short_description = 'Állítsd a kiválasztott kurzusok maximális létszámát 20-ra'
-
-    def max_letszam_25(self, request, queryset):
-        rows_updated = queryset.update(max_letszam=25)
-        self.message_user(request, '%s kurzus létszáma lett 25-re állítva.' %rows_updated)
-    max_letszam_25.short_description = 'Állítsd a kiválasztott kurzusok maximális létszámát 25-re'
-
-    def max_letszam_30(self, request, queryset):
-        rows_updated = queryset.update(max_letszam=30)
-        self.message_user(request, '%s kurzus létszáma lett 30-ra állítva.' %rows_updated)
-    max_letszam_30.short_description = 'Állítsd a kiválasztott kurzusok maximális létszámát 30-ra'
-
-    def max_letszam_35(self, request, queryset):
-        rows_updated = queryset.update(max_letszam=35)
-        self.message_user(request, '%s kurzus létszáma lett 35-re állítva.' %rows_updated)
-    max_letszam_35.short_description = 'Állítsd a kiválasztott kurzusok maximális létszámát 35-re'
-
-    def max_letszam_40(self, request, queryset):
-        rows_updated = queryset.update(max_letszam=40)
-        self.message_user(request, '%s kurzus létszáma lett 40-re állítva.' %rows_updated)
-    max_letszam_40.short_description = 'Állítsd a kiválasztott kurzusok maximális létszámát 40-re'
-
-    def max_letszam_45(self, request, queryset):
-        rows_updated = queryset.update(max_letszam=45)
-        self.message_user(request, '%s kurzus létszáma lett 45-re állítva.' %rows_updated)
-    max_letszam_45.short_description = 'Állítsd a kiválasztott kurzusok maximális létszámát 45-re'
-
-    def max_letszam_50(self, request, queryset):
-        rows_updated = queryset.update(max_letszam=50)
-        self.message_user(request, '%s kurzus létszáma lett 50-re állítva.' %rows_updated)
-    max_letszam_50.short_description = 'Állítsd a kiválasztott kurzusok maximális létszámát 50-re'
-
-    def max_letszam_55(self, request, queryset):
-        rows_updated = queryset.update(max_letszam=55)
-        self.message_user(request, '%s kurzus létszáma lett 55-re állítva.' %rows_updated)
-    max_letszam_55.short_description = 'Állítsd a kiválasztott kurzusok maximális létszámát 55-re'
-
-    def max_letszam_60(self, request, queryset):
-        rows_updated = queryset.update(max_letszam=60)
-        self.message_user(request, '%s kurzus létszáma lett 60-ra állítva.' %rows_updated)
-    max_letszam_60.short_description = 'Állítsd a kiválasztott kurzusok maximális létszámát 60-ra'
-
-    def max_letszam_65(self, request, queryset):
-        rows_updated = queryset.update(max_letszam=65)
-        self.message_user(request, '%s kurzus létszáma lett 65-re állítva.' %rows_updated)
-    max_letszam_65.short_description = 'Állítsd a kiválasztott kurzusok maximális létszámát 65-re'
-
-    def max_letszam_70(self, request, queryset):
-        rows_updated = queryset.update(max_letszam=70)
-        self.message_user(request, '%s kurzus létszáma lett 70-re állítva.' %rows_updated)
-    max_letszam_70.short_description = 'Állítsd a kiválasztott kurzusok maximális létszámát 70-re'
+    actions = [*MAX_LETSZAM_AKCIOK, 'nem_indul', 'indul']
 
     def nem_indul(self, request, queryset):
         rows_updated = queryset.update(nem_indul=True)

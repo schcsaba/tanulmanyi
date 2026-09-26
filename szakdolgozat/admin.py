@@ -1,6 +1,5 @@
 from django.contrib import admin
 from szakdolgozat.models import Temakor, Temavezeto, TemavezetoTemakor, TemaStatusz, Tema, Hallgato, Statusz, Tagozat, Kepzes, HallgatoKepzes, ErdemJegy, HallgatoKepzesTema, Beallitas
-from django.utils.safestring import mark_safe
 from tinymce.widgets import TinyMCE
 
 
@@ -98,6 +97,8 @@ class HallgatoKepzesTemaAdmin(admin.ModelAdmin):
     list_filter = ('kezdet', 'veg', 'hallgato_kepzes__kepzes', 'tema__tema_statusz', 'tema__temavezeto_temakor__temavezeto', 'erdemjegy', 'szakdolgozat_targyat_felvett', 'sikeres_vedes_datuma')
     list_per_page = 500
     list_display = ('hallgato_kepzes', 'kezdet', 'veg', 'erdemjegy', 'szakdolgozat_targyat_felvett', 'tema', 'sikeres_vedes_datuma')
+    list_select_related = ('hallgato_kepzes__hallgato', 'hallgato_kepzes__kepzes__tagozat', 'hallgato_kepzes__statusz',
+                           'tema__temavezeto_temakor__temavezeto', 'tema__temavezeto_temakor__temakor', 'erdemjegy')
     search_fields = ('hallgato_kepzes__hallgato__elotag', 'hallgato_kepzes__hallgato__vezeteknev', 'hallgato_kepzes__hallgato__keresztnev', 'hallgato_kepzes__hallgato__neptun_kod', 'tema__cim')
     radio_fields = {'kerveny': admin.VERTICAL}
     actions = ['szakdolgozat_targyat_felvett', 'szakdolgozat_targyat_nem_vett_fel']

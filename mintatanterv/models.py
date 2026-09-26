@@ -3,7 +3,7 @@ from tinymce.models import HTMLField
 from phonenumber_field.modelfields import PhoneNumberField
 
 class Munkarend(models.Model):
-    nev = models.CharField(max_length=20, unique='True', verbose_name='név')
+    nev = models.CharField(max_length=20, unique=True, verbose_name='név')
 
     class Meta:
         verbose_name = 'munkarend'
@@ -15,7 +15,7 @@ class Munkarend(models.Model):
 
 
 class Kovetelmeny(models.Model):
-    nev = models.CharField(max_length=40, unique='True', verbose_name='név')
+    nev = models.CharField(max_length=40, unique=True, verbose_name='név')
 
     class Meta:
         verbose_name = 'követelmény'
@@ -27,7 +27,7 @@ class Kovetelmeny(models.Model):
 
 
 class Kurzustipus(models.Model):
-    nev = models.CharField(max_length=30, unique='True', verbose_name='név')
+    nev = models.CharField(max_length=30, unique=True, verbose_name='név')
 
     class Meta:
         verbose_name = 'kurzustípus'
@@ -39,7 +39,7 @@ class Kurzustipus(models.Model):
 
 
 class Vizsgatipus(models.Model):
-    nev = models.CharField(max_length=50, unique='True', verbose_name='név')
+    nev = models.CharField(max_length=50, unique=True, verbose_name='név')
 
     class Meta:
         verbose_name = 'vizsgatípus'
@@ -51,7 +51,7 @@ class Vizsgatipus(models.Model):
 
 
 class Oktatotipus(models.Model):
-    nev = models.CharField(max_length=50, unique='True', verbose_name='név')
+    nev = models.CharField(max_length=50, unique=True, verbose_name='név')
 
     class Meta:
         verbose_name = 'oktatótípus'
@@ -81,12 +81,9 @@ class Oktato(models.Model):
     def __str__(self):
         return '%s %s %s (%s)' % (self.elotag, self.vezeteknev, self.keresztnev, self.avatott_nev) if self.avatott_nev else '%s %s %s' % (self.elotag, self.vezeteknev, self.keresztnev)
 
-    def get_absolute_url(self):
-        return "/%i/" % self.id
-
 
 class KepzesiSzint(models.Model):
-    nev = models.CharField(max_length=100, unique='True', verbose_name='név')
+    nev = models.CharField(max_length=100, unique=True, verbose_name='név')
 
     class Meta:
         verbose_name = 'képzési szint'
@@ -164,7 +161,7 @@ class Specializacio(models.Model):
 
 
 class NagyTargy(models.Model):
-    targykod = models.CharField(max_length=10, unique='True', verbose_name='tárgykód')
+    targykod = models.CharField(max_length=10, unique=True, verbose_name='tárgykód')
     targynev = models.CharField(max_length=200, verbose_name='tárgynév')
     kredit = models.IntegerField(verbose_name='kredit')
     szakirany = models.ManyToManyField(Szakirany, blank=True, related_name='szakirany', verbose_name='szakirány')
@@ -196,7 +193,7 @@ class NagyTargyOktato(models.Model):
 
 
 class Targy(models.Model):
-    targykod = models.CharField(max_length=20, unique='True', verbose_name='tárgykód')
+    targykod = models.CharField(max_length=20, unique=True, verbose_name='tárgykód')
     targynev = models.CharField(max_length=200, verbose_name='tárgynév')
     kredit = models.IntegerField(verbose_name='kredit')
     kovetelmeny = models.ForeignKey(Kovetelmeny, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='követelmény')
@@ -266,9 +263,6 @@ class TargyMunkarend(models.Model):
     def __str__(self):
         return '%s --- %s' % (self.targy, self.kurzuskod)
 
-    def get_absolute_url(self):
-        return "/mintatantervek/kurzusok/%i/" % self.id
-
 class TargyOktato(models.Model):
     targy = models.ForeignKey(Targy, on_delete=models.CASCADE, verbose_name='tárgy')
     oktato = models.ForeignKey(Oktato, on_delete=models.CASCADE, verbose_name='tárgyoktató')
@@ -283,7 +277,7 @@ class TargyOktato(models.Model):
         return '%s --- %s --- %s' % (self.targy, self.oktato, self.oktato_tipus)
 
 class Mintatanterv(models.Model):
-    kod = models.CharField(max_length=10, unique='True', verbose_name='kód')
+    kod = models.CharField(max_length=10, unique=True, verbose_name='kód')
     nev = models.CharField(max_length=200, verbose_name='név')
     szakirany = models.ManyToManyField(Szakirany, blank=True, related_name='mintatantervszakirany', verbose_name='szakirány')
     specializacio = models.ManyToManyField(Specializacio, blank=True, related_name='mintatantervspecializacio', verbose_name='specializáció')
@@ -303,7 +297,7 @@ class Mintatanterv(models.Model):
         return "/mintatantervek/%i/" % self.id
 
 class FelvetelTipusa(models.Model):
-    nev = models.CharField(max_length=50, unique='True', verbose_name='név')
+    nev = models.CharField(max_length=50, unique=True, verbose_name='név')
 
     class Meta:
         verbose_name = 'felvétel típusa'
