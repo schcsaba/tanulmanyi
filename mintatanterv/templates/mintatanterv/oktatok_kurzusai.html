@@ -1,0 +1,17 @@
+{% extends "tanulmanyi/home.html" %}
+
+{% block title %}{{ felev.oktatok_cim }}{% endblock %}
+
+{% block content %}
+
+<h1>{{ felev.oktatok_cim }}</h1>
+
+<hr>
+
+<ul>
+{% for oktato in oktatok %}
+    <li><a class="text-info" href="{% url felev.oktato_url oktato.pk %}">{{ oktato.vezeteknev }} {{ oktato.keresztnev }}{% if oktato.avatott_nev %} ({{ oktato.avatott_nev }}){% endif %}</a></li>
+{% endfor %}
+</ul>
+{% if is_staff %}<a class="text-info" href="{% url felev.xlsx_url %}">Kurzuslista Neptun importhoz (XLSX)</a>{% endif %}
+{% endblock %}

@@ -1,14 +1,14 @@
 {% extends "tanulmanyi/home.html" %}
 
-{% block title %}{{ oktato.vezeteknev }} {{ oktato.keresztnev }}{% if oktato.avatott_nev %} ({{ oktato.avatott_nev }}){% endif %} tavaszi kurzusai{% endblock %}
+{% block title %}{{ oktato.vezeteknev }} {{ oktato.keresztnev }}{% if oktato.avatott_nev %} ({{ oktato.avatott_nev }}){% endif %} {{ felev.melleknev }} kurzusai{% endblock %}
 
 {% block content %}
 
-<h1>{{ oktato.vezeteknev }} {{ oktato.keresztnev }}{% if oktato.avatott_nev %} ({{ oktato.avatott_nev }}){% endif %} tavaszi kurzusai</h1>
+<h1>{{ oktato.vezeteknev }} {{ oktato.keresztnev }}{% if oktato.avatott_nev %} ({{ oktato.avatott_nev }}){% endif %} {{ felev.melleknev }} kurzusai</h1>
 
 <hr>
 
-<p><a class="text-info" href="/mintatantervek/tavaszi_kurzusok/">Vissza az oktatók listájához</a></p>
+<p><a class="text-info" href="{% url felev.lista_url %}">Vissza az oktatók listájához</a></p>
 
 <table class="table table-sm table-bordered">
     <thead>
@@ -44,11 +44,10 @@
             <td class="table-info"><u>Kurzustípus</u></td>
             <td></td>
         </tr>
-        {% for kurzus in kurzusok %}
-            {% if kurzus.targy == targy %}
+        {% for kurzus in targy.felev_kurzusai %}
                 <tr>
                     <td></td>
-                    <td class="table-info">{{ kurzus.kurzuskod }}{% if is_staff and kurzus.orarend_oraszam > 0 %} <a href="{{ kurzus.get_absolute_url }}naplo/"><small>Napló</small></a>{% endif %}</td>
+                    <td class="table-info">{{ kurzus.kurzuskod }}{% if is_staff and kurzus.orarend_oraszam > 0 %} <a href="{% url 'kurzus_naplo' kurzus.pk %}"><small>Napló</small></a>{% endif %}</td>
                     <td class="table-info">{{ kurzus.munkarend }}</td>
                     <td class="table-info">{{ kurzus.orarend_oraszam }}</td>
                     <td class="table-info">{{ kurzus.max_hianyzas }}</td>
@@ -56,10 +55,9 @@
                     <td class="table-info">{{ kurzus.kurzustipus }}</td>
                     <td></td>
                 </tr>
-            {% endif %}
         {% endfor %}
     {% endfor %}
 </table>
 <p><a class="text-info" href="#top">Vissza a tetejére</a></p>
-<p><a class="text-info" href="/mintatantervek/tavaszi_kurzusok/">Vissza az oktatók listájához</a></p>
+<p><a class="text-info" href="{% url felev.lista_url %}">Vissza az oktatók listájához</a></p>
 {% endblock %}

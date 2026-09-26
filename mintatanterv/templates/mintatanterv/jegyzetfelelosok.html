@@ -10,7 +10,7 @@
 
 <ul>
 {% for jegyzetfelelos in jegyzetfelelosok %}
-    <li><a class="text-info" href="/mintatantervek/jegyzetfelelosok{{ jegyzetfelelos.get_absolute_url }}">{{ jegyzetfelelos.vezeteknev }} {{ jegyzetfelelos.keresztnev }}{% if jegyzetfelelos.avatott_nev %} ({{ jegyzetfelelos.avatott_nev }}){% endif %}</a></li>
+    <li><a class="text-info" href="{% url 'jegyzetfelelos_targyai' jegyzetfelelos.pk %}">{{ jegyzetfelelos.vezeteknev }} {{ jegyzetfelelos.keresztnev }}{% if jegyzetfelelos.avatott_nev %} ({{ jegyzetfelelos.avatott_nev }}){% endif %}</a></li>
 {% endfor %}
 </ul>
 

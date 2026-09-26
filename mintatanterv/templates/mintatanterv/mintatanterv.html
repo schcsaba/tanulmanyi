@@ -62,12 +62,12 @@
                         {% endif %}
                     </td>
                     <td>
-                        {% if mintatantervtargy.melytargyelofeltetele.all.count > 0 and mintatantervtargy.melymintatantervtargyelofeltetele.all.count > 0 %}
-                            {{ mintatantervtargy.melytargyelofeltetele.all|join:", " }}, {% for mtt in mintatantervtargy.melymintatantervtargyelofeltetele.all %}{{ mtt.targy }}{% if not forloop.last %}, {% endif %}{% endfor %}
-                        {% elif mintatantervtargy.melytargyelofeltetele.all.count > 0 %}
-                            {{ mintatantervtargy.melytargyelofeltetele.all|join:", " }}
-                        {% elif mintatantervtargy.melymintatantervtargyelofeltetele.all.count > 0 %}
-                            {% for mtt in mintatantervtargy.melymintatantervtargyelofeltetele.all %}{{ mtt.targy }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                        {% if mintatantervtargy.melytargyelofeltetele and mintatantervtargy.melymintatantervtargyelofeltetele %}
+                            {{ mintatantervtargy.melytargyelofeltetele|join:", " }}, {% for mtt in mintatantervtargy.melymintatantervtargyelofeltetele %}{{ mtt.targy }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                        {% elif mintatantervtargy.melytargyelofeltetele %}
+                            {{ mintatantervtargy.melytargyelofeltetele|join:", " }}
+                        {% elif mintatantervtargy.melymintatantervtargyelofeltetele %}
+                            {% for mtt in mintatantervtargy.melymintatantervtargyelofeltetele %}{{ mtt.targy }}{% if not forloop.last %}, {% endif %}{% endfor %}
                         {% endif %}
                     </td>
                     <th>{% if mintatantervtargy.kredit %}{{ mintatantervtargy.kredit }}{% else %}{{ mintatantervtargy.targy.kredit }}{% endif %}</th>

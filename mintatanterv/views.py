@@ -1,212 +1,219 @@
 import io
+from collections import defaultdict
+
 from xlsxwriter.workbook import Workbook
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
-from django.db.models import Q
+from django.db.models import Prefetch, Q
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth.decorators import login_required, user_passes_test
-from mintatanterv.models import Kepzes, Szak, Mintatanterv, Specializacio, Szakirany, MintatantervTargy, TargyMunkarend, Oktato, Targy, Felev, TargyOktato
+from django.contrib.auth.decorators import login_required
+from mintatanterv.models import (Kepzes, Szak, Mintatanterv, Specializacio, Szakirany, MintatantervTargy, TargyMunkarend,
+                                 Oktato, Targy, Felev, TargyOktato, Elofeltetel, ElofeltetelMintatantervben)
+from tanulmanyi.permissions import oktato_required
+
+KOTELEZO = 1  # FelvetelTipusa id
+VIZSGAKURZUS = 4  # Kurzustipus id
+JEGYZETFELELOS = 'Jegyzetfelelős'  # Oktatotipus név
+
+FELEVEK = {
+    'osz': {
+        'felevek': [1, 3, 5],
+        'oktatok_cim': 'Az őszi félév kurzusainak oktatói',
+        'melleknev': 'őszi',
+        'lista_url': 'oktatok_kurzusai_osz',
+        'oktato_url': 'oktato_kurzusai_osz',
+        'xlsx_url': 'xlsx_oktatok_kurzusai_osz',
+        'xlsx_nev': 'oszi_kurzusok',
+    },
+    'tavasz': {
+        'felevek': [2, 4, 6],
+        'oktatok_cim': 'A tavaszi félév kurzusainak oktatói',
+        'melleknev': 'tavaszi',
+        'lista_url': 'oktatok_kurzusai_tavasz',
+        'oktato_url': 'oktato_kurzusai_tavasz',
+        'xlsx_url': 'xlsx_oktatok_kurzusai_tavasz',
+        'xlsx_nev': 'tavaszi_kurzusok',
+    },
+}
+
+# Mintatanterv kód -> Neptun kód; a (levelező, nappali) pár, ha a kurzus munkarendjétől függ
+NEPTUN_MINTATANTERV_KODOK = {
+    'KJJBA17': 'KJJBA',
+    'KJTBA17': 'KJTBA',
+    'KJTMA17': 'KJTMA',
+    'SZAJBA17': ('SZAJBA17-L', 'SZAJBA17-N'),
+    'J09': ('JL09', 'JN09'),
+    'J12': ('JL12', 'JN12'),
+    'J13': ('JL13', 'JN13'),
+    'J14': ('JL14', 'JN14'),
+    'J15': ('JL15', 'JN15'),
+    'J17': ('JL17', 'JN17'),
+    'T13': ('TL13', 'TN13'),
+    'T15': ('TL15', 'TN15'),
+    'T16': ('TL16', 'TN16'),
+    'T17': ('TL17', 'TN17'),
+    'MT14': 'MTN14',
+    'MT14J': 'MTN14J',
+    'MT14T': 'MTN14T',
+    'MT17': 'MTN17',
+    'MT17J': 'MTN17J',
+    'MT17T': 'MTN17T',
+}
+
+XLSX_FEJLEC = ['Tárgykód', 'Félév', 'Kurzuskód', 'Maximális létszám', 'Nyelv', 'Kurzustípus', 'Megjegyzés',
+               'Heti óraszám', 'Féléves óraszám', 'Típusazonosító', 'Lejelentkezés letiltva', 'Jelentkezés letiltva',
+               'Kurzusfelvételi követelmény', 'Kurzusfelvételi követelmény leírás', 'Tagozat',
+               'Alkalmazott Neptun kódja', 'Mintatanterv kódja']
+
+
+def _aktualis_felev():
+    try:
+        return Felev.objects.get(aktualis=True).felev
+    except Felev.DoesNotExist:
+        return 'Nincs megadva'
+    except Felev.MultipleObjectsReturned:
+        return 'Több is meg van adva'
+
+
+def _felev_kurzusai(felev):
+    """The courses that run in the given semester of the current curricula."""
+    return TargyMunkarend.objects.exclude(nem_indul=True).filter(
+        Q(targy__mintatanterv__aktualis=True),
+        Q(targy__mintatantervtargy__felev__in=FELEVEK[felev]['felevek'])
+        | Q(targy__mintatantervtargy__oszi_tavaszi=True)
+        | Q(kurzustipus=VIZSGAKURZUS)).distinct()
+
+
+def _neptun_mintatanterv_kod(mintatanterv, kurzus):
+    kod = NEPTUN_MINTATANTERV_KODOK.get(mintatanterv.kod, mintatanterv.kod)
+    if isinstance(kod, tuple):
+        levelezo, nappali = kod
+        return levelezo if kurzus.munkarend.nev == 'levelező' else nappali
+    return kod
+
 
 @login_required
 def mintatantervek(request):
-    args = {}
-    kepzesek = Kepzes.objects.all()
-    for kepzes in kepzesek:
-        kepzes.szakok = Szak.objects.filter(kepzes=kepzes)
-        for szak in kepzes.szakok:
-            szak.mintatantervek = Mintatanterv.objects.filter(szak=szak)
-            szak.specializaciok = Specializacio.objects.filter(szak=szak)
-            for spec in szak.specializaciok:
-                spec.mintatantervek = Mintatanterv.objects.filter(specializacio=spec)
-            szak.szakiranyok = Szakirany.objects.filter(szak=szak)
-            for szaki in szak.szakiranyok:
-                szaki.mintatantervek = Mintatanterv.objects.filter(szakirany=szaki)
-    args['kepzesek'] = kepzesek
-    return render(request, 'mintatanterv/mintatantervek.html', args)
+    def mintatantervei(kapcsolat):
+        return Prefetch(kapcsolat, queryset=Mintatanterv.objects.all(), to_attr='mintatantervek')
+
+    szakok = Szak.objects.order_by('pk').prefetch_related(
+        mintatantervei('mintatantervszak'),
+        Prefetch('specializacio_set', to_attr='specializaciok',
+                 queryset=Specializacio.objects.order_by('pk').prefetch_related(mintatantervei('mintatantervspecializacio'))),
+        Prefetch('szakirany_set', to_attr='szakiranyok',
+                 queryset=Szakirany.objects.order_by('pk').prefetch_related(mintatantervei('mintatantervszakirany'))))
+    kepzesek = (Kepzes.objects.select_related('kepzesi_szint').order_by('pk')
+                .prefetch_related(Prefetch('szak_set', queryset=szakok, to_attr='szakok')))
+    return render(request, 'mintatanterv/mintatantervek.html', {'kepzesek': kepzesek})
 
 
 @login_required
 def mintatanterv(request, mintatanterv_id):
     mintatanterv = get_object_or_404(Mintatanterv, pk=mintatanterv_id)
+    kurzusok = (TargyMunkarend.objects.select_related('munkarend', 'kurzustipus')
+                .prefetch_related('oktato', 'vizsgatipus').order_by('pk'))
+    mintatantervtargyak = list(
+        mintatanterv.mintatantervtargy_set
+        .select_related('targy__kovetelmeny', 'felvetel_tipusa')
+        .prefetch_related(
+            Prefetch('fotargymintatantervben', queryset=ElofeltetelMintatantervben.objects
+                     .select_related('elofeltetel_targy').order_by('elofeltetel_targy_id')),
+            Prefetch('targy__fotargy', queryset=Elofeltetel.objects
+                     .select_related('elofeltetel_targy').order_by('elofeltetel_targy_id')),
+            'targy__kurzustipus',
+            Prefetch('targy__targymunkarend_set', queryset=kurzusok))
+        # Within a felvétel típusa MySQL used to return them in tárgy order; kept explicit.
+        .order_by('felvetel_tipusa', 'targy_id'))
+
+    # Which subjects of this curriculum each subject is a prerequisite of
+    targy_idk = [mtt.targy_id for mtt in mintatantervtargyak]
+    melyik_targynak = defaultdict(list)
+    for elofeltetel in (Elofeltetel.objects.filter(elofeltetel_targy__in=targy_idk, targy__in=targy_idk)
+                        .select_related('targy').order_by('targy__targykod')):
+        melyik_targynak[elofeltetel.elofeltetel_targy_id].append(elofeltetel.targy)
+    melyik_mintatantervtargynak = defaultdict(list)
+    for elofeltetel in (ElofeltetelMintatantervben.objects
+                        .filter(elofeltetel_targy__in=targy_idk, targy__mintatanterv=mintatanterv)
+                        .select_related('targy__targy').order_by('pk')):
+        melyik_mintatantervtargynak[elofeltetel.elofeltetel_targy_id].append(elofeltetel.targy)
+
+    felevek = sorted({mtt.felev for mtt in mintatantervtargyak})
+    felev_kreditek = dict.fromkeys(felevek, 0)
+    felev_nem_kot_kreditek = dict.fromkeys(felevek, 0)
+    for mtt in mintatantervtargyak:
+        kreditek = felev_kreditek if mtt.felvetel_tipusa_id == KOTELEZO else felev_nem_kot_kreditek
+        kreditek[mtt.felev] += mtt.kredit or mtt.targy.kredit
+        mtt.melytargyelofeltetele = melyik_targynak[mtt.targy_id]
+        mtt.melymintatantervtargyelofeltetele = melyik_mintatantervtargynak[mtt.targy_id]
+
     args = {}
     args['mintatanterv'] = mintatanterv
-    felevek = MintatantervTargy.objects.filter(mintatanterv=mintatanterv).order_by('felev').values_list('felev', flat=True).distinct()
-
     args['felevek'] = felevek
-
-    felev_kreditek = {}
-    felev_nem_kot_kreditek = {}
-    for felev in felevek:
-        felev_kotelezo_targyai = mintatanterv.mintatantervtargy_set.filter(felev=felev).filter(felvetel_tipusa=1)
-        felev_nem_kotelezo_targyai = mintatanterv.mintatantervtargy_set.filter(felev=felev).exclude(felvetel_tipusa=1)
-        felev_kredit = 0
-        for felev_kotelezo_targy in felev_kotelezo_targyai:
-            if felev_kotelezo_targy.kredit:
-                felev_kredit = felev_kredit + felev_kotelezo_targy.kredit
-            else:
-                felev_kredit = felev_kredit + felev_kotelezo_targy.targy.kredit
-        felev_kreditek[felev] = felev_kredit
-        felev_nem_kot_kredit = 0
-        for felev_nem_kotelezo_targy in felev_nem_kotelezo_targyai:
-            if felev_nem_kotelezo_targy.kredit:
-                felev_nem_kot_kredit = felev_nem_kot_kredit + felev_nem_kotelezo_targy.kredit
-            else:
-                felev_nem_kot_kredit = felev_nem_kot_kredit + felev_nem_kotelezo_targy.targy.kredit
-        felev_nem_kot_kreditek[felev] = felev_nem_kot_kredit
-
     args['felev_kreditek'] = felev_kreditek
     args['felev_nem_kot_kreditek'] = felev_nem_kot_kreditek
-
-    mintatantervtargyak = mintatanterv.mintatantervtargy_set.all().order_by('felvetel_tipusa')
-    for mintatantervtargy in mintatantervtargyak:
-        mintatantervtargy.melytargyelofeltetele = mintatantervtargy.targy.ezentargyakelofelteteletipussal.filter(mintatanterv=mintatanterv)
-        mintatantervtargy.melymintatantervtargyelofeltetele = mintatantervtargy.targy.ezenmintatantervtargyakelofelteteletipussal.filter(mintatanterv=mintatanterv)
-
     args['mintatantervtargyak'] = mintatantervtargyak
     return render(request, 'mintatanterv/mintatanterv.html', args)
 
 
-def in_oktatok_group(user):
-    return user.is_authenticated and user.groups.filter(name='Oktatok').exists()
+@oktato_required
+def oktatok_kurzusai(request, felev):
+    kurzusok = _felev_kurzusai(felev).exclude(kurzuskod__icontains='-KV')
+    oktatok = Oktato.objects.filter(pk__in=kurzusok.values_list('oktato', flat=True))
+    return render(request, 'mintatanterv/oktatok_kurzusai.html', {'oktatok': oktatok, 'felev': FELEVEK[felev]})
 
 
-@user_passes_test(in_oktatok_group)
-def oktatok_kurzusai_osz(request):
-    kurzusok = TargyMunkarend.objects.exclude(kurzuskod__icontains='-KV').exclude(nem_indul=True).filter(Q(targy__mintatanterv__aktualis=True), Q(targy__mintatantervtargy__felev__in=[1, 3, 5]) | Q(targy__mintatantervtargy__oszi_tavaszi=True) | Q(kurzustipus=4)).distinct()
-    oktatok = Oktato.objects.filter(pk__in=kurzusok.values_list('oktato', flat=True).distinct())
-
-    args = {}
-    args['oktatok'] = oktatok
-    return render(request, 'mintatanterv/oktatok_oszi_kurzusai.html', args)
-
-
-@user_passes_test(in_oktatok_group)
-def oktato_kurzusai_osz(request, oktato_id):
+@oktato_required
+def oktato_kurzusai(request, felev, oktato_id):
     oktato = get_object_or_404(Oktato, pk=oktato_id)
-    kurzusok = TargyMunkarend.objects.filter(oktato=oktato).exclude(kurzuskod__icontains='-KV').exclude(nem_indul=True).filter(Q(targy__mintatanterv__aktualis=True), Q(targy__mintatantervtargy__felev__in=[1, 3, 5]) | Q(targy__mintatantervtargy__oszi_tavaszi=True) | Q(kurzustipus=4)).distinct()
-    targyak = Targy.objects.filter(pk__in=kurzusok.values_list('targy', flat=True).distinct())
+    oktato_kurzusai = _felev_kurzusai(felev).exclude(kurzuskod__icontains='-KV').filter(oktato=oktato)
+    kurzusok = (oktato_kurzusai.select_related('targy', 'munkarend', 'kurzustipus')
+                .prefetch_related('vizsgatipus').order_by('pk'))
+    aktualis_mintatantervtargyak = (MintatantervTargy.objects.filter(mintatanterv__aktualis=True)
+                                    .select_related('mintatanterv', 'felvetel_tipusa').order_by('mintatanterv__kod'))
+    targyak = list(Targy.objects.filter(pk__in=oktato_kurzusai.values_list('targy', flat=True))
+                   .select_related('kovetelmeny')
+                   .prefetch_related('kurzustipus', 'ekvivalens_targy',
+                                     Prefetch('mintatantervtargy_set', queryset=aktualis_mintatantervtargyak,
+                                              to_attr='aktualis_mintatantervtargyak')))
 
+    targy_kurzusai = defaultdict(list)
+    for kurzus in kurzusok:
+        targy_kurzusai[kurzus.targy_id].append(kurzus)
     for targy in targyak:
-        targymintatantervek = targy.mintatanterv.filter(aktualis=True)
-        targy.mintatantervi_kredit = []
-        targy.mintatantervek_felevekkel = []
-        targy.mintatantervek_felvetel_tipusaval = []
-        for targymintatanterv in targymintatantervek:
-            mintatantervtargy = MintatantervTargy.objects.get(mintatanterv=targymintatanterv, targy=targy)
-            if mintatantervtargy.kredit:
-                string = '%s: %s' % (mintatantervtargy.mintatanterv.kod, mintatantervtargy.kredit)
-                targy.mintatantervi_kredit.append(string)
-            string2 = '%s: %s. félév' % (mintatantervtargy.mintatanterv.kod, mintatantervtargy.felev)
-            targy.mintatantervek_felevekkel.append(string2)
-            string3 = '%s: %s' % (mintatantervtargy.mintatanterv.kod, mintatantervtargy.felvetel_tipusa)
-            targy.mintatantervek_felvetel_tipusaval.append(string3)
+        mtts = targy.aktualis_mintatantervtargyak
+        targy.felev_kurzusai = targy_kurzusai[targy.pk]
+        targy.mintatantervi_kredit = ['%s: %s' % (m.mintatanterv.kod, m.kredit) for m in mtts if m.kredit]
+        targy.mintatantervek_felevekkel = ['%s: %s. félév' % (m.mintatanterv.kod, m.felev) for m in mtts]
+        targy.mintatantervek_felvetel_tipusaval = ['%s: %s' % (m.mintatanterv.kod, m.felvetel_tipusa) for m in mtts]
 
     args = {}
     args['oktato'] = oktato
-    args['kurzusok'] = kurzusok
     args['targyak'] = targyak
-    return render(request, 'mintatanterv/oktato_oszi_kurzusai.html', args)
-
-
-@user_passes_test(in_oktatok_group)
-def oktatok_kurzusai_tavasz(request):
-    kurzusok = TargyMunkarend.objects.exclude(kurzuskod__icontains='-KV').exclude(nem_indul=True).filter(Q(targy__mintatanterv__aktualis=True), Q(targy__mintatantervtargy__felev__in=[2, 4, 6]) | Q(targy__mintatantervtargy__oszi_tavaszi=True) | Q(kurzustipus=4)).distinct()
-    oktatok = Oktato.objects.filter(pk__in=kurzusok.values_list('oktato', flat=True).distinct())
-
-    args = {}
-    args['oktatok'] = oktatok
-    return render(request, 'mintatanterv/oktatok_tavaszi_kurzusai.html', args)
-
-
-@user_passes_test(in_oktatok_group)
-def oktato_kurzusai_tavasz(request, oktato_id):
-    oktato = get_object_or_404(Oktato, pk=oktato_id)
-    kurzusok = TargyMunkarend.objects.filter(oktato=oktato).exclude(kurzuskod__icontains='-KV').exclude(nem_indul=True).filter(Q(targy__mintatanterv__aktualis=True), Q(targy__mintatantervtargy__felev__in=[2, 4, 6]) | Q(targy__mintatantervtargy__oszi_tavaszi=True) | Q(kurzustipus=4)).distinct()
-    targyak = Targy.objects.filter(pk__in=kurzusok.values_list('targy', flat=True).distinct())
-
-    for targy in targyak:
-        targymintatantervek = targy.mintatanterv.filter(aktualis=True)
-        targy.mintatantervi_kredit = []
-        targy.mintatantervek_felevekkel = []
-        targy.mintatantervek_felvetel_tipusaval = []
-        for targymintatanterv in targymintatantervek:
-            mintatantervtargy = MintatantervTargy.objects.get(mintatanterv=targymintatanterv, targy=targy)
-            if mintatantervtargy.kredit:
-                string = '%s: %s' % (mintatantervtargy.mintatanterv.kod, mintatantervtargy.kredit)
-                targy.mintatantervi_kredit.append(string)
-            string2 = '%s: %s. félév' % (mintatantervtargy.mintatanterv.kod, mintatantervtargy.felev)
-            targy.mintatantervek_felevekkel.append(string2)
-            string3 = '%s: %s' % (mintatantervtargy.mintatanterv.kod, mintatantervtargy.felvetel_tipusa)
-            targy.mintatantervek_felvetel_tipusaval.append(string3)
-
-    args = {}
-    args['oktato'] = oktato
-    args['kurzusok'] = kurzusok
-    args['targyak'] = targyak
-    return render(request, 'mintatanterv/oktato_tavaszi_kurzusai.html', args)
+    args['felev'] = FELEVEK[felev]
+    return render(request, 'mintatanterv/oktato_kurzusai.html', args)
 
 
 @staff_member_required
-def xlsx_oktatok_kurzusai_osz(request):
-    kurzusok = TargyMunkarend.objects.exclude(nem_indul=True).filter(Q(targy__mintatanterv__aktualis=True), Q(targy__mintatantervtargy__felev__in=[1, 3, 5]) | Q(targy__mintatantervtargy__oszi_tavaszi=True) | Q(kurzustipus=4)).distinct()
-
-    try:
-        felev = Felev.objects.get(aktualis=True)
-        felev = felev.felev
-    except Felev.DoesNotExist:
-        felev = 'Nincs megadva'
-    except Felev.MultipleObjectsReturned:
-        felev = 'Több is meg van adva'
+def xlsx_oktatok_kurzusai(request, felev):
+    kurzusok = (_felev_kurzusai(felev)
+                .select_related('targy', 'munkarend', 'nyelv', 'kurzustipus')
+                .prefetch_related('oktato', Prefetch('targy__mintatanterv', to_attr='aktualis_mintatantervek',
+                                                     queryset=Mintatanterv.objects.filter(aktualis=True)))
+                .order_by('pk'))
+    aktualis_felev = _aktualis_felev()
 
     output = io.BytesIO()
     book = Workbook(output)
-    sheet = book.add_worksheet('oszi_kurzusok')
-    sheet.write(0, 0, 'Tárgykód')
-    sheet.write(0, 1, 'Félév')
-    sheet.write(0, 2, 'Kurzuskód')
-    sheet.write(0, 3, 'Maximális létszám')
-    sheet.write(0, 4, 'Nyelv')
-    sheet.write(0, 5, 'Kurzustípus')
-    sheet.write(0, 6, 'Megjegyzés')
-    sheet.write(0, 7, 'Heti óraszám')
-    sheet.write(0, 8, 'Féléves óraszám')
-    sheet.write(0, 9, 'Típusazonosító')
-    sheet.write(0, 10, 'Lejelentkezés letiltva')
-    sheet.write(0, 11, 'Jelentkezés letiltva')
-    sheet.write(0, 12, 'Kurzusfelvételi követelmény')
-    sheet.write(0, 13, 'Kurzusfelvételi követelmény leírás')
-    sheet.write(0, 14, 'Tagozat')
-    sheet.write(0, 15, 'Alkalmazott Neptun kódja')
-    sheet.write(0, 16, 'Mintatanterv kódja')
+    sheet = book.add_worksheet(FELEVEK[felev]['xlsx_nev'])
+    sheet.write_row(0, 0, XLSX_FEJLEC)
     x = 1
     for kurzus in kurzusok:
-        for mintatanterv in kurzus.targy.mintatanterv.filter(aktualis=True):
-            switcher = {
-                'KJJBA17': 'KJJBA',
-                'KJTBA17': 'KJTBA',
-                'KJTMA17': 'KJTMA',
-                'SZAJBA17': 'SZAJBA17-L' if kurzus.munkarend.nev == 'levelező' else 'SZAJBA17-N',
-                'J09': 'JL09' if kurzus.munkarend.nev == 'levelező' else 'JN09',
-                'J12': 'JL12' if kurzus.munkarend.nev == 'levelező' else 'JN12',
-                'J13': 'JL13' if kurzus.munkarend.nev == 'levelező' else 'JN13',
-                'J14': 'JL14' if kurzus.munkarend.nev == 'levelező' else 'JN14',
-                'J15': 'JL15' if kurzus.munkarend.nev == 'levelező' else 'JN15',
-                'J17': 'JL17' if kurzus.munkarend.nev == 'levelező' else 'JN17',
-                'T13': 'TL13' if kurzus.munkarend.nev == 'levelező' else 'TN13',
-                'T15': 'TL15' if kurzus.munkarend.nev == 'levelező' else 'TN15',
-                'T16': 'TL16' if kurzus.munkarend.nev == 'levelező' else 'TN16',
-                'T17': 'TL17' if kurzus.munkarend.nev == 'levelező' else 'TN17',
-                'MT14': 'MTN14',
-                'MT14J': 'MTN14J',
-                'MT14T': 'MTN14T',
-                'MT17': 'MTN17',
-                'MT17J': 'MTN17J',
-                'MT17T': 'MTN17T',
-                }
-            mintatanterv_kod = switcher.get(mintatanterv.kod, mintatanterv.kod)
+        for mintatanterv in kurzus.targy.aktualis_mintatantervek:
+            mintatanterv_kod = _neptun_mintatanterv_kod(mintatanterv, kurzus)
             for oktato in kurzus.oktato.all():
                 sheet.write(x, 0, kurzus.targy.targykod)
-                sheet.write(x, 1, felev)
+                sheet.write(x, 1, aktualis_felev)
                 sheet.write(x, 2, kurzus.kurzuskod)
                 sheet.write(x, 3, kurzus.max_letszam)
                 if kurzus.nyelv:
@@ -217,10 +224,7 @@ def xlsx_oktatok_kurzusai_osz(request):
                 sheet.write(x, 7, round(float(kurzus.akkr_oraszam) / 15, 1))
                 sheet.write(x, 8, kurzus.akkr_oraszam)
                 if kurzus.kurzustipus:
-                    if kurzus.kurzustipus.id == 4:
-                        sheet.write(x, 9, 'Vizsgakurzus')
-                    else:
-                        sheet.write(x, 9, 'Normál')
+                    sheet.write(x, 9, 'Vizsgakurzus' if kurzus.kurzustipus.id == VIZSGAKURZUS else 'Normál')
                 sheet.write(x, 10, kurzus.lejelentkezes_letiltva)
                 sheet.write(x, 11, kurzus.jelentkezes_letiltva)
                 sheet.write(x, 12, kurzus.kurzusfelveteli_kovetelmeny)
@@ -233,99 +237,7 @@ def xlsx_oktatok_kurzusai_osz(request):
 
     output.seek(0)
     response = HttpResponse(output, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-    response['Content-Disposition'] = "attachment; filename=oszi_kurzusok_listaja.xlsx"
-
-    return response
-
-
-@staff_member_required
-def xlsx_oktatok_kurzusai_tavasz(request):
-    kurzusok = TargyMunkarend.objects.exclude(nem_indul=True).filter(Q(targy__mintatanterv__aktualis=True), Q(targy__mintatantervtargy__felev__in=[2, 4, 6]) | Q(targy__mintatantervtargy__oszi_tavaszi=True) | Q(kurzustipus=4)).distinct()
-
-    try:
-        felev = Felev.objects.get(aktualis=True)
-        felev = felev.felev
-    except Felev.DoesNotExist:
-        felev = 'Nincs megadva'
-    except Felev.MultipleObjectsReturned:
-        felev = 'Több is meg van adva'
-
-    output = io.BytesIO()
-    book = Workbook(output)
-    sheet = book.add_worksheet('oszi_kurzusok')
-    sheet.write(0, 0, 'Tárgykód')
-    sheet.write(0, 1, 'Félév')
-    sheet.write(0, 2, 'Kurzuskód')
-    sheet.write(0, 3, 'Maximális létszám')
-    sheet.write(0, 4, 'Nyelv')
-    sheet.write(0, 5, 'Kurzustípus')
-    sheet.write(0, 6, 'Megjegyzés')
-    sheet.write(0, 7, 'Heti óraszám')
-    sheet.write(0, 8, 'Féléves óraszám')
-    sheet.write(0, 9, 'Típusazonosító')
-    sheet.write(0, 10, 'Lejelentkezés letiltva')
-    sheet.write(0, 11, 'Jelentkezés letiltva')
-    sheet.write(0, 12, 'Kurzusfelvételi követelmény')
-    sheet.write(0, 13, 'Kurzusfelvételi követelmény leírás')
-    sheet.write(0, 14, 'Tagozat')
-    sheet.write(0, 15, 'Alkalmazott Neptun kódja')
-    sheet.write(0, 16, 'Mintatanterv kódja')
-    x = 1
-    for kurzus in kurzusok:
-        for mintatanterv in kurzus.targy.mintatanterv.filter(aktualis=True):
-            switcher = {
-                'KJJBA17': 'KJJBA',
-                'KJTBA17': 'KJTBA',
-                'KJTMA17': 'KJTMA',
-                'SZAJBA17': 'SZAJBA17-L' if kurzus.munkarend.nev == 'levelező' else 'SZAJBA17-N',
-                'J09': 'JL09' if kurzus.munkarend.nev == 'levelező' else 'JN09',
-                'J12': 'JL12' if kurzus.munkarend.nev == 'levelező' else 'JN12',
-                'J13': 'JL13' if kurzus.munkarend.nev == 'levelező' else 'JN13',
-                'J14': 'JL14' if kurzus.munkarend.nev == 'levelező' else 'JN14',
-                'J15': 'JL15' if kurzus.munkarend.nev == 'levelező' else 'JN15',
-                'J17': 'JL17' if kurzus.munkarend.nev == 'levelező' else 'JN17',
-                'T13': 'TL13' if kurzus.munkarend.nev == 'levelező' else 'TN13',
-                'T15': 'TL15' if kurzus.munkarend.nev == 'levelező' else 'TN15',
-                'T16': 'TL16' if kurzus.munkarend.nev == 'levelező' else 'TN16',
-                'T17': 'TL17' if kurzus.munkarend.nev == 'levelező' else 'TN17',
-                'MT14': 'MTN14',
-                'MT14J': 'MTN14J',
-                'MT14T': 'MTN14T',
-                'MT17': 'MTN17',
-                'MT17J': 'MTN17J',
-                'MT17T': 'MTN17T',
-                }
-            mintatanterv_kod = switcher.get(mintatanterv.kod, mintatanterv.kod)
-            for oktato in kurzus.oktato.all():
-                sheet.write(x, 0, kurzus.targy.targykod)
-                sheet.write(x, 1, felev)
-                sheet.write(x, 2, kurzus.kurzuskod)
-                sheet.write(x, 3, kurzus.max_letszam)
-                if kurzus.nyelv:
-                    sheet.write(x, 4, kurzus.nyelv.nev)
-                if kurzus.kurzustipus:
-                    sheet.write(x, 5, kurzus.kurzustipus.nev)
-                sheet.write(x, 6, kurzus.megjegyzes)
-                sheet.write(x, 7, round(float(kurzus.akkr_oraszam) / 15, 1))
-                sheet.write(x, 8, kurzus.akkr_oraszam)
-                if kurzus.kurzustipus:
-                    if kurzus.kurzustipus.id == 4:
-                        sheet.write(x, 9, 'Vizsgakurzus')
-                    else:
-                        sheet.write(x, 9, 'Normál')
-                sheet.write(x, 10, kurzus.lejelentkezes_letiltva)
-                sheet.write(x, 11, kurzus.jelentkezes_letiltva)
-                sheet.write(x, 12, kurzus.kurzusfelveteli_kovetelmeny)
-                sheet.write(x, 13, kurzus.kurzusfelveteli_kovetelmeny_leiras)
-                sheet.write(x, 14, kurzus.munkarend.nev)
-                sheet.write(x, 15, oktato.neptun_kod)
-                sheet.write(x, 16, mintatanterv_kod)
-                x += 1
-    book.close()
-
-    output.seek(0)
-    response = HttpResponse(output, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-    response['Content-Disposition'] = "attachment; filename=tavaszi_kurzusok_listaja.xlsx"
+    response['Content-Disposition'] = "attachment; filename=%s_listaja.xlsx" % FELEVEK[felev]['xlsx_nev']
 
     return response
 
@@ -373,23 +285,17 @@ def kurzus_naplo(request, kurzus_id):
             for nagytargy_nagytargycsoport in nagytargy_nagytargycsoportok:
                 szakok.append(nagytargy_nagytargycsoport.szak.nev[9].upper() + ' (' + nagytargy_nagytargycsoport.szak.kepzes.kepzesi_szint.nev[-7:-5] + ')')
 
-        szakok = list(set(szakok))
+        szakok = sorted(set(szakok))
         szakok = ', '.join(szakok)
         kurzus.szakok = szakok
 
-    oktatok = list(set(oktatok))
+    oktatok = sorted(set(oktatok))
     oktatok = ', '.join(oktatok)
-    oktatok1 = list(set(oktatok1))
+    oktatok1 = sorted(set(oktatok1))
     oktatok1 = '_'.join(oktatok1)
     kurzuskodok = '_'.join(kurzuskodok)
 
-    try:
-        felev = Felev.objects.get(aktualis=True)
-        felev = felev.felev
-    except Felev.DoesNotExist:
-        felev = 'Nincs megadva'
-    except Felev.MultipleObjectsReturned:
-        felev = 'Több is meg van adva'
+    felev = _aktualis_felev()
 
     targylista = []
 
@@ -539,19 +445,19 @@ def kurzus_naplo(request, kurzus_id):
     return response
 
 
-@user_passes_test(in_oktatok_group)
+@oktato_required
 def jegyzetfelelosok(request):
-    jegyzetfelelosok = Oktato.objects.filter(pk__in=TargyOktato.objects.filter(oktato_tipus__nev='Jegyzetfelelős').values_list('oktato', flat=True).distinct())
+    jegyzetfelelosok = Oktato.objects.filter(pk__in=TargyOktato.objects.filter(oktato_tipus__nev=JEGYZETFELELOS).values_list('oktato', flat=True).distinct())
 
     args = {}
     args['jegyzetfelelosok'] = jegyzetfelelosok
     return render(request, 'mintatanterv/jegyzetfelelosok.html', args)
 
 
-@user_passes_test(in_oktatok_group)
+@oktato_required
 def jegyzetfelelos_targyai(request, oktato_id):
     oktato = get_object_or_404(Oktato, pk=oktato_id)
-    targyak = Targy.objects.filter(pk__in=TargyOktato.objects.filter(Q(oktato=oktato), Q(oktato_tipus__nev='Jegyzetfelelős')).values_list('targy', flat=True).distinct())
+    targyak = Targy.objects.filter(pk__in=TargyOktato.objects.filter(Q(oktato=oktato), Q(oktato_tipus__nev=JEGYZETFELELOS)).values_list('targy', flat=True).distinct())
 
     args = {}
     args['targyak'] = targyak
@@ -565,4 +471,3 @@ def oktatok_elerhetosegei(request):
     oktatok = Oktato.objects.filter(megjelenites=True).order_by('vezeteknev', 'keresztnev')
     args['oktatok'] = oktatok
     return render(request, 'mintatanterv/oktatok_elerhetosegei.html', args)
-
