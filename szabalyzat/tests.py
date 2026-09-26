@@ -447,6 +447,40 @@ class SzabalyzatIntegrationTests(TestCase):
         self.client.login(username='student', password='testpass123')
         
         # Test that the query count is reasonable
-        with self.assertNumQueries(5):  # Auth + regulations queries
+        with self.assertNumQueries(4):  # Session, user, regulations, teacher-group check
             response = self.client.get(reverse('szabalyzatok'))
             self.assertEqual(response.status_code, 200)
+
+
+class SzabalyzatFileDownloadTests(TestCase):
+    """Test cases for downloading regulation files that exist on disk"""
+
+    def setUp(self):
+        """Create a regulation with an accented file name in a temporary MEDIA_ROOT"""
+        self.media_root = tempfile.mkdtemp()
+        self.settings_override = self.settings(MEDIA_ROOT=self.media_root)
+        self.settings_override.enable()
+        os.makedirs(os.path.join(self.media_root, 'szabalyzatok'))
+        with open(os.path.join(self.media_root, 'szabalyzatok', 'térítési_díjak.pdf'), 'wb') as f:
+            f.write(b'%PDF-1.4 test')
+        self.regulation = Szabalyzat.objects.create(
+            nev="Térítési szabályzat",
+            szabalyzatfajl="szabalyzatok/térítési_díjak.pdf",
+            csak_oktatoknak=False
+        )
+        User.objects.create_user(username='student', password='testpass123')
+        self.client.login(username='student', password='testpass123')
+
+    def tearDown(self):
+        self.settings_override.disable()
+        import shutil
+        shutil.rmtree(self.media_root, ignore_errors=True)
+
+    def test_download_content_and_filename(self):
+        """Test that the file is served as an attachment with its (non-ASCII) name intact"""
+        response = self.client.get(reverse('szabalyzat_letoltes', args=[self.regulation.id]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/pdf')
+        self.assertIn("filename*=utf-8''t%C3%A9r%C3%ADt%C3%A9si_d%C3%ADjak.pdf", response['Content-Disposition'])
+        self.assertEqual(b''.join(response.streaming_content), b'%PDF-1.4 test')

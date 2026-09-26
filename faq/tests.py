@@ -229,7 +229,7 @@ class FaqIntegrationTests(TestCase):
         
         # Test that the query count is reasonable (not excessive)
         # Django auth may require several queries, but should be < 10 total
-        with self.assertNumQueries(6):  # Auth + FAQ queries
+        with self.assertNumQueries(4):  # Session, user, FAQ list, teacher-group check
             response = self.client.get(reverse('faq'))
             self.assertEqual(response.status_code, 200)
         
@@ -242,6 +242,6 @@ class FaqIntegrationTests(TestCase):
         )
         
         # Query count should remain the same with one more FAQ item
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(4):
             response = self.client.get(reverse('faq'))
             self.assertEqual(response.status_code, 200)
