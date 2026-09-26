@@ -52,7 +52,10 @@ If you prefer to run without Docker, you'll need:
 
 ## Production Deployment
 
-For production deployment with Docker:
+Production runs on PythonAnywhere (EU site), without Docker. See [PYTHONANYWHERE.md](PYTHONANYWHERE.md) for the
+setup and the deployment steps.
+
+For a Docker-based production deployment instead:
 ```bash
 # Using Makefile (recommended)
 make prod-up
