@@ -5,7 +5,7 @@
 {% block content %}
 <h1>Megírt szakdolgozatok érdemjegyenként</h1>
 <hr>
-{% if erdemjegyek.count > 0 %}
+{% if erdemjegyek %}
     <div class="accordion" id="accordion">
         {% for erdemjegy in erdemjegyek %}
             {% if erdemjegy.hallgatokepzestema_set.all.count > 0 %}
@@ -53,6 +53,7 @@
                 </div>
             {% endif %}
         {% endfor %}
+    </div>
 {% else %}
     <p>Az adatbázisban nincsenek érdemjegyek.</p>
 {% endif %}

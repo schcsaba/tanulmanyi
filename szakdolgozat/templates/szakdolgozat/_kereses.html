@@ -1,0 +1,19 @@
+<h2>Keresés</h2>
+<form class="form-inline" action="." method="GET">
+    <div class="form-group mb-2">
+        <label for="cim" class="ml-2">Szakdolgozat címe:</label>
+        <input type="text" class="form-control ml-2" name="cim" id="cim" value="{{ cim }}">
+    </div>
+    <div class="form-group mb-2">
+        <label for="hallgato" class="ml-2">Hallgató:</label>
+        <input type="text" class="form-control ml-2" name="hallgato" id="hallgato" value="{{ hallgato }}">
+    </div>
+    <div class="form-group mb-2">
+        <label for="temavezeto" class="ml-2">Témavezető:</label>
+        <input type="text" class="form-control ml-2" name="temavezeto" id="temavezeto" value="{{ temavezeto }}">
+    </div>
+    <div class="form-group mb-2">
+        <input class="btn btn-info ml-2" type="submit" value="Keresés">
+        <a class="btn btn-info ml-2" href="." role="button">Keresés törlése</a>
+    </div>
+</form>

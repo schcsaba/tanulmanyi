@@ -10,7 +10,7 @@
 
 <hr>
 
-{% if aktiv_temavezetok.count > 0 %}
+{% if aktiv_temavezetok %}
     <!--<h3>Összes szabad hely: {{ osszes_szabad_hely }} | Kint lévő címbejelentők: {{ osszes_cimbejelento }}</h3>-->
     <h3>Összes szabad hely: {{ osszes_szabad_hely }}</h3>
     <!--<h4>Letöltés: <a href="/szakdolgozatok/temavezetok/letoltes/">DOCX</a></h4>-->
@@ -27,16 +27,16 @@
                             <br><strong>Email:</strong> <a class="text-info" href="mailto:{{ temavezeto.email }}">{{ temavezeto.email }}</a>
                             <br><strong>Maximális létszám:</strong> <span class="badge badge-pill badge-dark">{{ temavezeto.max_letszam }}</span>
                             <br><strong>Szakdolgozók száma:</strong> <span class="badge badge-pill badge-dark">{{ temavezeto.foglalt_helyek }}</span><strong>, ebből szakdolgozati tárgyat felvett vagy kérvény alapján segíti témavezető: <span class="badge badge-pill badge-dark">{{ temavezeto.szakd_targyat_felvett }}</span>, ebből MA képzésen: <span class="badge badge-pill badge-dark">{{ temavezeto.ma_szakdolgozatok_szama }}</span></strong>
-                            <br><strong>Témák száma:</strong> <span class="badge badge-pill badge-dark">{{ temavezeto.valaszthato_temakorok_szama }}</span>
+                            <br><strong>Témák száma:</strong> <span class="badge badge-pill badge-dark">{{ temavezeto.valaszthato_temakorok_lista|length }}</span>
                         </address>
                     </h6>
                 </div>
                 <div id="card{{ forloop.counter }}-collapse" class="collapse" aria-labelledby="card{{ forloop.counter }}-heading" data-parent="#accordion">
                     <div class="card-body">
-                        {% if temavezeto.valaszthato_temakorok_szama %}
+                        {% if temavezeto.valaszthato_temakorok_lista %}
                             <div class="accordion" id="card{{ forloop.counter }}-accordion">
                                 <h2>Témakörök</h2>
-                                {% for temavezetotemakor in temavezeto.valaszthato_temakorok %}
+                                {% for temavezetotemakor in temavezeto.valaszthato_temakorok_lista %}
                                     <div class="card">
                                         <div class="card-header" id="card{{ forloop.parentloop.counter }}_{{ forloop.counter }}-heading">
                                             <h6 class="mb-0">
@@ -44,16 +44,16 @@
                                                     <button class="btn btn-link text-left collapsed" type="button" data-toggle="collapse" data-target="#card{{ forloop.parentloop.counter }}_{{ forloop.counter }}-collapse" aria-expanded="false" aria-controls="card{{ forloop.parentloop.counter }}_{{ forloop.counter }}-collapse">
                                                         <h5 class="text-dark">{{ temavezetotemakor.temakor.cim }}</h5>
                                                     </button>
-                                                    <p><strong>Címek száma:</strong> <span class="badge badge-pill badge-dark">{{ temavezetotemakor.nem_megirt_temak.count }}</span> ebből <strong class="text-success">szabad:</strong> <span class="badge badge-pill badge-dark">{{ temavezetotemakor.szabad_plusz_temak.count }}</span> <strong class="text-danger">foglalt:</strong> <span class="badge badge-pill badge-dark">{{ temavezetotemakor.foglalt_temak.count }}</span></p>
+                                                    <p><strong>Címek száma:</strong> <span class="badge badge-pill badge-dark">{{ temavezetotemakor.nem_megirt_temak_lista|length }}</span> ebből <strong class="text-success">szabad:</strong> <span class="badge badge-pill badge-dark">{{ temavezetotemakor.szabad_plusz_temak_lista|length }}</span> <strong class="text-danger">foglalt:</strong> <span class="badge badge-pill badge-dark">{{ temavezetotemakor.foglalt_temak_lista|length }}</span></p>
                                                 </address>
                                             </h6>
                                         </div>
                                         <div id="card{{ forloop.parentloop.counter }}_{{ forloop.counter }}-collapse" class="collapse" aria-labelledby="card{{ forloop.parentloop.counter }}_{{ forloop.counter }}-heading" data-parent="#card{{ forloop.parentloop.counter }}-accordion">
                                             <div class="card-body">
-                                                {% if temavezetotemakor.nem_megirt_temak.count > 0 %}
+                                                {% if temavezetotemakor.nem_megirt_temak_lista %}
                                                     <div class="accordion" id="card{{ forloop.parentloop.counter }}_{{ forloop.counter }}-accordion">
                                                         <h3>Címjavaslatok (a szakdolgozat írása során pontosítandó)</h3>
-                                                        {% for tema in temavezetotemakor.nem_megirt_temak %}
+                                                        {% for tema in temavezetotemakor.nem_megirt_temak_lista %}
                                                             <div class="card {% if tema.tema_statusz.nev == 'Szabad' or tema.tema_statusz.nev == 'Szabad (elkezdett, de be nem fejezett)' %} border-success {% elif tema.tema_statusz.nev == 'Címbejelentő lap kiadva' %} border-warning {% else %} border-danger {% endif %}">
                                                                 <div class="card-header" id="card{{ forloop.parentloop.parentloop.counter }}_{{ forloop.parentloop.counter }}_{{ forloop.counter }}-heading">
                                                                     <h6 class="mb-0">

@@ -6,10 +6,10 @@
 <h1>Megírt szakdolgozatok témavezetőnként</h1>
 <p class="text-muted">A témavezetők nevére kattintva megjelennek a témák, a témák címére kattintva a szakdolgozatok, a szakdolgozatok címére kattintva pedig a hallgató, aki írta, illetve ha több hallgató is dolgozott rajta korábban, de nem fejezték be, akkor ők is.</p>
 <hr>
-{% if temavezetok.count > 0 %}
+{% if temavezetok %}
     <div class="accordion" id="accordion">
         {% for temavezeto in temavezetok %}
-            {% if temavezeto.megirt_temak_szama > 0 %}
+            {% if temavezeto.megirt_temak_db > 0 %}
                 <div class="card">
                     <div class="card-header" id="card{{ forloop.counter }}-heading">
                         <h6 class="mb-0">
@@ -17,7 +17,7 @@
                                 <button class="btn btn-link text-left collapsed" type="button" data-toggle="collapse" data-target="#card{{ forloop.counter }}-collapse" aria-expanded="false" aria-controls="card{{ forloop.counter }}-collapse">
                                     <h5 class="text-info">{{ temavezeto.vezeteknev }} {{ temavezeto.keresztnev }} {% if temavezeto.avatott_nev %} ({{ temavezeto.avatott_nev }}){% endif %}</h5>
                                 </button>
-                                <br><strong>Megírt szakdolgozatok száma:</strong> <span class="badge badge-pill badge-dark">{{ temavezeto.megirt_temak_szama }}</span>
+                                <br><strong>Megírt szakdolgozatok száma:</strong> <span class="badge badge-pill badge-dark">{{ temavezeto.megirt_temak_db }}</span>
                             </address>
                         </h6>
                     </div>
@@ -25,8 +25,8 @@
                         <div class="card-body">
                             <div class="accordion" id="card{{ forloop.counter }}-accordion">
                                 <h2>Témák</h2>
-                                {% for temavezetotemakor in temavezeto.temavezetotemakor_set.all %}
-                                    {% if temavezetotemakor.megirt_temak.count > 0 %}
+                                {% for temavezetotemakor in temavezeto.temakorok_lista %}
+                                    {% if temavezetotemakor.megirt_temak_lista %}
                                         <div class="card">
                                             <div class="card-header" id="card{{ forloop.parentloop.counter }}_{{ forloop.counter }}-heading">
                                                 <h6 class="mb-0">
@@ -34,16 +34,16 @@
                                                         <button class="btn btn-link text-left collapsed" type="button" data-toggle="collapse" data-target="#card{{ forloop.parentloop.counter }}_{{ forloop.counter }}-collapse" aria-expanded="false" aria-controls="card{{ forloop.parentloop.counter }}_{{ forloop.counter }}-collapse">
                                                             <h5 class="text-dark">{{ temavezetotemakor.temakor.cim }}</h5>
                                                         </button>
-                                                        <p><strong>Címek száma:</strong> <span class="badge badge-pill badge-dark">{{ temavezetotemakor.megirt_temak.count }}</span></p>
+                                                        <p><strong>Címek száma:</strong> <span class="badge badge-pill badge-dark">{{ temavezetotemakor.megirt_temak_lista|length }}</span></p>
                                                     </address>
                                                 </h6>
                                             </div>
                                             <div id="card{{ forloop.parentloop.counter }}_{{ forloop.counter }}-collapse" class="collapse" aria-labelledby="card{{ forloop.parentloop.counter }}_{{ forloop.counter }}-heading" data-parent="#card{{ forloop.parentloop.counter }}-accordion">
                                                 <div class="card-body">
-                                                    {% if temavezetotemakor.megirt_temak.count > 0 %}
+                                                    {% if temavezetotemakor.megirt_temak_lista %}
                                                         <div class="accordion" id="card{{ forloop.parentloop.counter }}_{{ forloop.counter }}-accordion">
                                                             <h3>Címek</h3>
-                                                            {% for tema in temavezetotemakor.megirt_temak %}
+                                                            {% for tema in temavezetotemakor.megirt_temak_lista %}
                                                                 <div class="card border-warning">
                                                                     <div class="card-header" id="card{{ forloop.parentloop.parentloop.counter }}_{{ forloop.parentloop.counter }}_{{ forloop.counter }}-heading">
                                                                         <h6 class="mb-0">

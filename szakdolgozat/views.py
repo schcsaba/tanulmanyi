@@ -1,176 +1,156 @@
+from urllib.parse import urlencode
+
 from django.shortcuts import render
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db.models import Q
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from szakdolgozat.models import Temavezeto, Tema, HallgatoKepzesTema, ErdemJegy, Beallitas
+from django.contrib.auth.decorators import login_required
+from django.db.models import Count, Prefetch, Q
+from django.core.paginator import Paginator
+from szakdolgozat.models import Temavezeto, TemavezetoTemakor, Tema, HallgatoKepzesTema, ErdemJegy, Beallitas
+from tanulmanyi.permissions import oktato_required
+
+# Tema.tema_statusz ids
+SZABAD, FOGLALT, MEGIRT, SZABAD_ELKEZDETT, CIMBEJELENTO = 1, 2, 3, 4, 6
+NEM_MEGIRT_KIZART = (MEGIRT, 5)
+
+HALLGATOK_PREFETCH = Prefetch(
+    'hallgatokepzestema_set',
+    queryset=HallgatoKepzesTema.objects.select_related(
+        'hallgato_kepzes__hallgato', 'hallgato_kepzes__kepzes__tagozat', 'hallgato_kepzes__statusz', 'erdemjegy'))
+
+
+def _beallitas_szovege(nev):
+    beallitas = Beallitas.objects.filter(nev=nev).first()
+    return beallitas.szoveg if beallitas else ''
+
+
+def _temavezetok_temakorokkel(temavezetok):
+    """Loads the visible topic areas, their not-yet-written titles and the students on them,
+    plus the per-supervisor counters, in a fixed number of queries."""
+    hkt = 'temavezetotemakor__tema__hallgatokepzestema'
+    temak = (Tema.objects.exclude(tema_statusz__in=NEM_MEGIRT_KIZART)
+             .select_related('tema_statusz').prefetch_related(HALLGATOK_PREFETCH))
+    temakorok = (TemavezetoTemakor.objects.filter(rejtett=False).select_related('temakor')
+                 .prefetch_related(Prefetch('tema_set', queryset=temak, to_attr='nem_megirt_temak_lista')))
+    # Meta.ordering is dropped from GROUP BY queries, so the order is restated here.
+    temavezetok = list(temavezetok.order_by('vezeteknev', 'keresztnev').annotate(
+        szakd_targyat_felvett=Count(hkt, filter=Q(**{hkt + '__szakdolgozat_targyat_felvett': True}), distinct=True),
+        ma_szakdolgozatok_szama=Count(hkt, filter=Q(**{hkt + '__szakdolgozat_targyat_felvett': True,
+                                                        hkt + '__hallgato_kepzes__kepzes__kepzes_kod': 'MTN'}),
+                                      distinct=True),
+        foglalt_helyek=Count('temavezetotemakor__tema', filter=Q(temavezetotemakor__tema__tema_statusz=FOGLALT),
+                             distinct=True),
+        cimbejelento=Count('temavezetotemakor__tema', filter=Q(temavezetotemakor__tema__tema_statusz=CIMBEJELENTO),
+                           distinct=True),
+    ).prefetch_related(Prefetch('temavezetotemakor_set', queryset=temakorok, to_attr='valaszthato_temakorok_lista')))
+
+    for temavezeto in temavezetok:
+        for temakor in temavezeto.valaszthato_temakorok_lista:
+            temak = temakor.nem_megirt_temak_lista
+            temakor.szabad_plusz_temak_lista = [t for t in temak if t.tema_statusz_id in (SZABAD, SZABAD_ELKEZDETT)]
+            temakor.foglalt_temak_lista = [t for t in temak if t.tema_statusz_id == FOGLALT]
+            temakor.szabad_plusz_cimbejelento_temak_lista = [
+                t for t in temak if t.tema_statusz_id in (SZABAD, SZABAD_ELKEZDETT, CIMBEJELENTO)]
+    return temavezetok
 
 
 @login_required
 def temavezetok(request):
-    temavezetok = Temavezeto.objects.filter(valaszthato=True)
-    osszes_szabad_hely = 0
-    osszes_cimbejelento = 0
+    temavezetok = _temavezetok_temakorokkel(Temavezeto.objects.filter(valaszthato=True))
     for temavezeto in temavezetok:
-        temavezeto.szakd_targyat_felvett = HallgatoKepzesTema.objects.filter(tema__temavezeto_temakor__temavezeto__exact=temavezeto.id).filter(szakdolgozat_targyat_felvett__exact=1).count()
-        # temavezeto.kerveny = HallgatoKepzesTema.objects.filter(tema__temavezeto_temakor__temavezeto__exact=temavezeto.id).filter(kerveny__in=['kerveny_01', 'kerveny_02']).count()
-        # temavezeto.szabad_helyek = temavezeto.max_letszam - temavezeto.szakd_targyat_felvett - temavezeto.kerveny
         temavezeto.szabad_helyek = temavezeto.max_letszam - temavezeto.szakd_targyat_felvett
-        temavezeto.foglalt_helyek = Tema.foglalt.filter(temavezeto_temakor__temavezeto__exact=temavezeto.id).count()
         temavezeto.szakd_targyat_nem_vett_fel = temavezeto.foglalt_helyek - temavezeto.szakd_targyat_felvett
-        temavezeto.cimbejelento = Tema.cimbejelento.filter(temavezeto_temakor__temavezeto__exact=temavezeto.id).count()
-        osszes_szabad_hely = osszes_szabad_hely + temavezeto.szabad_helyek
-        osszes_cimbejelento = osszes_cimbejelento + temavezeto.cimbejelento
     args = {}
-    args['osszes_szabad_hely'] = osszes_szabad_hely
-    args['osszes_cimbejelento'] = osszes_cimbejelento
+    args['osszes_szabad_hely'] = sum(t.szabad_helyek for t in temavezetok)
+    args['osszes_cimbejelento'] = sum(t.cimbejelento for t in temavezetok)
     args['temavezetok'] = temavezetok
     return render(request, 'szakdolgozat/temavezetok.html', args)
 
-def extra_adatok_temavezetohoz(temavezeto):
-    temavezeto.szakd_targyat_felvett = HallgatoKepzesTema.objects.filter(tema__temavezeto_temakor__temavezeto__exact=temavezeto.id).filter(szakdolgozat_targyat_felvett__exact=1).count()
-    # temavezeto.kerveny = HallgatoKepzesTema.objects.filter(tema__temavezeto_temakor__temavezeto__exact=temavezeto.id).filter(kerveny__in=['kerveny_01', 'kerveny_02']).count()
-    # temavezeto.szabad_helyek = temavezeto.max_letszam - temavezeto.szakd_targyat_felvett - temavezeto.kerveny
-
-    # az MA képzésen írt szakdolgozatok két helyet foglalnak le a témavezető kvótájából,
-    # ezért az MA képzésen írt szakdolgozatok számát levonjuk a szabad helyek szamából,
-    # így az MA képzésen írt szakdolgozatok kétszer lesznek levonva ebből a számból
-    temavezeto.ma_szakdolgozatok_szama = HallgatoKepzesTema.objects.filter(tema__temavezeto_temakor__temavezeto__exact=temavezeto.id).filter(szakdolgozat_targyat_felvett__exact=1).filter(hallgato_kepzes__kepzes__kepzes_kod='MTN').count()
-    temavezeto.szabad_helyek = temavezeto.max_letszam - temavezeto.szakd_targyat_felvett - temavezeto.ma_szakdolgozatok_szama
-
-    temavezeto.foglalt_helyek = Tema.foglalt.filter(temavezeto_temakor__temavezeto__exact=temavezeto.id).count()
-    #temavezeto.szakd_targyat_nem_vett_fel = temavezeto.foglalt_helyek - temavezeto.szakd_targyat_felvett
-    #temavezeto.cimbejelento = Tema.cimbejelento.filter(temavezeto_temakor__temavezeto__exact=temavezeto.id).count()
 
 @login_required
 def valaszthato_temavezetok(request):
-    #valaszthato_temavezetok = Temavezeto.objects.filter(valaszthato=True)
-    #osszes_szabad_hely = 0
-    #osszes_cimbejelento = 0
-    #for temavezeto in valaszthato_temavezetok:
-    #    extra_adatok_temavezetohoz(temavezeto)
-    #    osszes_szabad_hely = osszes_szabad_hely + (temavezeto.szabad_helyek if temavezeto.szabad_helyek > 0 else 0)
-        #osszes_cimbejelento = osszes_cimbejelento + temavezeto.cimbejelento
-    args = {}
-    #args['osszes_szabad_hely'] = osszes_szabad_hely
-    #args['osszes_cimbejelento'] = osszes_cimbejelento
-    #args['valaszthato_temavezetok'] = valaszthato_temavezetok
-    try:
-        temavalasztas_menete = Beallitas.objects.get(nev='temavalasztas_menete')
-        args['temavalasztas_menete'] = temavalasztas_menete.szoveg
-    except Beallitas.DoesNotExist:
-        args['temavalasztas_menete'] = ''
+    args = {'temavalasztas_menete': _beallitas_szovege('temavalasztas_menete')}
     return render(request, 'szakdolgozat/valaszthato_temavezetok.html', args)
 
 
 @login_required
 def aktiv_temavezetok(request):
-    aktiv_temavezetok = Temavezeto.objects.filter(inaktiv=False)
-    osszes_szabad_hely = 0
-    #osszes_cimbejelento = 0
+    aktiv_temavezetok = _temavezetok_temakorokkel(Temavezeto.objects.filter(inaktiv=False))
     for temavezeto in aktiv_temavezetok:
-        extra_adatok_temavezetohoz(temavezeto)
-        osszes_szabad_hely = osszes_szabad_hely + (temavezeto.szabad_helyek if temavezeto.szabad_helyek > 0 else 0)
-        #osszes_cimbejelento = osszes_cimbejelento + temavezeto.cimbejelento
+        # az MA képzésen írt szakdolgozatok két helyet foglalnak le a témavezető kvótájából,
+        # ezért az MA képzésen írt szakdolgozatok számát levonjuk a szabad helyek szamából,
+        # így az MA képzésen írt szakdolgozatok kétszer lesznek levonva ebből a számból
+        temavezeto.szabad_helyek = (temavezeto.max_letszam - temavezeto.szakd_targyat_felvett
+                                    - temavezeto.ma_szakdolgozatok_szama)
     args = {}
-    args['osszes_szabad_hely'] = osszes_szabad_hely
-    #args['osszes_cimbejelento'] = osszes_cimbejelento
+    args['osszes_szabad_hely'] = sum(max(t.szabad_helyek, 0) for t in aktiv_temavezetok)
     args['aktiv_temavezetok'] = aktiv_temavezetok
-    try:
-        temavalasztas_menete = Beallitas.objects.get(nev='temavalasztas_menete')
-        args['temavalasztas_menete'] = temavalasztas_menete.szoveg
-    except Beallitas.DoesNotExist:
-        args['temavalasztas_menete'] = ''
+    args['temavalasztas_menete'] = _beallitas_szovege('temavalasztas_menete')
     return render(request, 'szakdolgozat/aktiv_temavezetok.html', args)
+
+
+def _szakdolgozat_lista(request, hallgatokepzestema, template):
+    """Shared search + pagination for the thesis list pages."""
+    kereses = {nev: request.GET.get(nev, '') for nev in ('cim', 'hallgato', 'temavezeto')}
+    if any(kereses.values()):
+        hallgato, temavezeto = kereses['hallgato'], kereses['temavezeto']
+        hallgatokepzestema = hallgatokepzestema.filter(
+            Q(tema__cim__icontains=kereses['cim']),
+            Q(hallgato_kepzes__hallgato__vezeteknev__icontains=hallgato)
+            | Q(hallgato_kepzes__hallgato__keresztnev__icontains=hallgato)
+            | Q(hallgato_kepzes__hallgato__neptun_kod__icontains=hallgato),
+            Q(tema__temavezeto_temakor__temavezeto__vezeteknev__icontains=temavezeto)
+            | Q(tema__temavezeto_temakor__temavezeto__keresztnev__icontains=temavezeto)
+            | Q(tema__temavezeto_temakor__temavezeto__neptun_kod__icontains=temavezeto))
+    hallgatokepzestema = hallgatokepzestema.select_related(
+        'hallgato_kepzes__hallgato', 'hallgato_kepzes__kepzes__tagozat', 'tema__tema_statusz',
+        'tema__temavezeto_temakor__temavezeto', 'tema__temavezeto_temakor__temakor')
+
+    paginator = Paginator(hallgatokepzestema, 20)
+    args = dict(kereses)
+    args['kereses_query'] = urlencode(kereses)
+    args['paginator'] = paginator
+    args['paginatorpage'] = paginator.get_page(request.GET.get('page'))
+    return render(request, template, args)
 
 
 @login_required
 def megirtesfolyamatban_pag_or_search(request):
-    args = {}
-    if request.GET.get('cim') or request.GET.get('hallgato') or request.GET.get('temavezeto'):
-        cim = request.GET.get('cim')
-        args['cim'] = cim
-        hallgato = request.GET.get('hallgato')
-        args['hallgato'] = hallgato
-        temavezeto = request.GET.get('temavezeto')
-        args['temavezeto'] = temavezeto
-        hallgatokepzestema = HallgatoKepzesTema.objects.filter(tema__cim__icontains=cim).filter(Q(hallgato_kepzes__hallgato__vezeteknev__icontains=hallgato) | Q(hallgato_kepzes__hallgato__keresztnev__icontains=hallgato) | Q(hallgato_kepzes__hallgato__neptun_kod__icontains=hallgato)).filter(Q(tema__temavezeto_temakor__temavezeto__vezeteknev__icontains=temavezeto) | Q(tema__temavezeto_temakor__temavezeto__keresztnev__icontains=temavezeto) | Q(tema__temavezeto_temakor__temavezeto__neptun_kod__icontains=temavezeto)).exclude(Q(tema__tema_statusz__exact=2),Q(veg__isnull=False)).order_by('-kezdet', '-veg')
-    else:
-        hallgatokepzestema = HallgatoKepzesTema.objects.exclude(Q(tema__tema_statusz__exact=2),Q(veg__isnull=False)).order_by('-kezdet', '-veg')
-
-    paginator = Paginator(hallgatokepzestema, 20)
-    args['paginator'] = paginator
-    page = request.GET.get('page')
-
-    try:
-        args['paginatorpage'] = paginator.page(page)
-    except PageNotAnInteger:
-        args['paginatorpage'] = paginator.page(1)
-    except EmptyPage:
-        args['paginatorpage'] = paginator.page(paginator.num_pages)
-
-    return render(request, 'szakdolgozat/megirtesfolyamatban_pag_or_search.html', args)
+    hallgatokepzestema = (HallgatoKepzesTema.objects.exclude(Q(tema__tema_statusz__exact=FOGLALT), Q(veg__isnull=False))
+                          .order_by('-kezdet', '-veg'))
+    return _szakdolgozat_lista(request, hallgatokepzestema, 'szakdolgozat/megirtesfolyamatban_pag_or_search.html')
 
 
 @login_required
 def szakdolgozatrepozitorium(request):
-    args = {}
-    if request.GET.get('cim') or request.GET.get('hallgato') or request.GET.get('temavezeto'):
-        cim = request.GET.get('cim')
-        args['cim'] = cim
-        hallgato = request.GET.get('hallgato')
-        args['hallgato'] = hallgato
-        temavezeto = request.GET.get('temavezeto')
-        args['temavezeto'] = temavezeto
-        hallgatokepzestema = HallgatoKepzesTema.objects.filter(tema__cim__icontains=cim).filter(Q(hallgato_kepzes__hallgato__vezeteknev__icontains=hallgato) | Q(hallgato_kepzes__hallgato__keresztnev__icontains=hallgato) | Q(hallgato_kepzes__hallgato__neptun_kod__icontains=hallgato)).filter(Q(tema__temavezeto_temakor__temavezeto__vezeteknev__icontains=temavezeto) | Q(tema__temavezeto_temakor__temavezeto__keresztnev__icontains=temavezeto) | Q(tema__temavezeto_temakor__temavezeto__neptun_kod__icontains=temavezeto)).filter(sikeres_vedes_datuma__isnull=False).order_by('-veg')
-    else:
-        hallgatokepzestema = HallgatoKepzesTema.objects.filter(sikeres_vedes_datuma__isnull=False).order_by('-veg')
-
-    paginator = Paginator(hallgatokepzestema, 20)
-    args['paginator'] = paginator
-    page = request.GET.get('page')
-
-    try:
-        args['paginatorpage'] = paginator.page(page)
-    except PageNotAnInteger:
-        args['paginatorpage'] = paginator.page(1)
-    except EmptyPage:
-        args['paginatorpage'] = paginator.page(paginator.num_pages)
-
-    return render(request, 'szakdolgozat/szakdolgozatrepozitorium.html', args)
+    hallgatokepzestema = HallgatoKepzesTema.objects.filter(sikeres_vedes_datuma__isnull=False).order_by('-veg')
+    return _szakdolgozat_lista(request, hallgatokepzestema, 'szakdolgozat/szakdolgozatrepozitorium.html')
 
 
-def in_oktatok_group(user):
-    return user.is_authenticated and user.groups.filter(name='Oktatok').exists()
-
-@user_passes_test(in_oktatok_group)
+@oktato_required
 def temavezetok_megirt(request):
-    args = {}
-    args['temavezetok'] = Temavezeto.objects.all()
-    return render(request, 'szakdolgozat/temavezetok_megirt.html', args)
+    temak = Tema.objects.filter(tema_statusz=MEGIRT).select_related('tema_statusz').prefetch_related(HALLGATOK_PREFETCH)
+    temakorok = TemavezetoTemakor.objects.select_related('temakor').prefetch_related(
+        Prefetch('tema_set', queryset=temak, to_attr='megirt_temak_lista'))
+    temavezetok = list(Temavezeto.objects.prefetch_related(
+        Prefetch('temavezetotemakor_set', queryset=temakorok, to_attr='temakorok_lista')))
+    for temavezeto in temavezetok:
+        temavezeto.megirt_temak_db = sum(len(t.megirt_temak_lista) for t in temavezeto.temakorok_lista)
+    return render(request, 'szakdolgozat/temavezetok_megirt.html', {'temavezetok': temavezetok})
 
 
-@user_passes_test(in_oktatok_group)
+@oktato_required
 def megirtak_jegyenkent(request):
-    args = {}
-    args['erdemjegyek'] = ErdemJegy.objects.all()
-    return render(request, 'szakdolgozat/megirtak_jegyenkent.html', args)
+    hallgatokepzestemak = HallgatoKepzesTema.objects.select_related(
+        'tema', 'hallgato_kepzes__hallgato', 'hallgato_kepzes__kepzes__tagozat', 'hallgato_kepzes__statusz')
+    erdemjegyek = ErdemJegy.objects.prefetch_related(Prefetch('hallgatokepzestema_set', queryset=hallgatokepzestemak))
+    return render(request, 'szakdolgozat/megirtak_jegyenkent.html', {'erdemjegyek': erdemjegyek})
+
 
 @login_required
 def kurzusok(request):
-    args = {}
-    try:
-        kurzusok = Beallitas.objects.get(nev='kurzusok')
-        args['kurzusok'] = kurzusok.szoveg
-    except Beallitas.DoesNotExist:
-        args['kurzusok'] = ''
-    return render(request, 'szakdolgozat/kurzusok.html', args)
+    return render(request, 'szakdolgozat/kurzusok.html', {'kurzusok': _beallitas_szovege('kurzusok')})
+
 
 @login_required
 def zarovizsga_tetelek(request):
-    args = {}
-    try:
-        zarovizsga_tetelek = Beallitas.objects.get(nev='zarovizsga_tetelek')
-        args['zarovizsga_tetelek'] = zarovizsga_tetelek.szoveg
-    except Beallitas.DoesNotExist:
-        args['zarovizsga_tetelek'] = ''
-    return render(request, 'szakdolgozat/zarovizsga_tetelek.html', args)
+    return render(request, 'szakdolgozat/zarovizsga_tetelek.html',
+                  {'zarovizsga_tetelek': _beallitas_szovege('zarovizsga_tetelek')})
