@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib import auth
+from django.views.decorators.http import require_POST
 
 
 def home(request):
@@ -10,17 +11,16 @@ def login(request):
     return render(request, 'tanulmanyi/login.html')
 
 
+@require_POST
 def auth_view(request):
     username = request.POST.get('username', '')
     password = request.POST.get('password', '')
     user = auth.authenticate(username=username, password=password)
 
-    if user is not None:
-        if user.is_active:
-            auth.login(request, user)
-            return redirect('/accounts/loggedin')
-    else:
-        return redirect('/accounts/invalid')
+    if user is not None and user.is_active:
+        auth.login(request, user)
+        return redirect('/accounts/loggedin')
+    return redirect('/accounts/invalid')
 
 
 def loggedin(request):

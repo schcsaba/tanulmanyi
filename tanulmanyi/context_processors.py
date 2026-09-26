@@ -1,5 +1,13 @@
+from django.utils.functional import SimpleLazyObject
+
+from tanulmanyi.permissions import is_oktato
+
+
 def is_proper_processor(request):
-    is_logged_in = request.user.is_authenticated
-    is_oktato = request.user.groups.filter(name='Oktatok')
-    is_staff = request.user.is_staff
-    return {'is_logged_in': is_logged_in, 'is_oktato': is_oktato, 'is_staff': is_staff}
+    user = request.user
+    return {
+        'is_logged_in': user.is_authenticated,
+        # Lazy, so pages that never check it don't pay for the group query.
+        'is_oktato': SimpleLazyObject(lambda: is_oktato(user)),
+        'is_staff': user.is_staff,
+    }
