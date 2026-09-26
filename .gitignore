@@ -254,3 +254,6 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# collectstatic output (STATIC_ROOT); regenerate with `python manage.py collectstatic`
+/static/
