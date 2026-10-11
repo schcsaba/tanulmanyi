@@ -87,7 +87,7 @@ Python 3.10 on the Web tab, and reload.
 
 **Afterwards:** delete the old virtualenvs (Python 3.10 and 3.8) with `rmvirtualenv <name>`.
 
-## One-time upgrade: Django 4.2 → 5.2 (done September 2026)
+## One-time upgrade: Django 4.2 → 5.2 (done October 2026)
 
 Kept for reference; it ran on haggis with Python 3.10.
 
