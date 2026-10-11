@@ -52,9 +52,44 @@ python manage.py collectstatic --noinput
 Then press **Reload** on the Web tab and check the error log.
 
 If `requirements.txt` changed, run `pip install -r requirements.txt` after `git pull` (inside the virtualenv),
-or for bigger upgrades build a fresh virtualenv as in the next section.
+or for bigger upgrades build a fresh virtualenv as in the sections below.
 
-## One-time upgrade: Django 4.2 → 5.2 and Python 3.13 (September 2026)
+## Switching the system image: haggis → innit, Python 3.10 → 3.13 (October 2026)
+
+The account is on the **haggis** system image (Ubuntu 20.04), whose newest Python is 3.10. Python 3.10 reaches end
+of life in October 2026, and Django 6 will need Python 3.12 or newer. The **innit** image (Ubuntu 22.04) offers
+Python 3.13, the version the Docker setup uses.
+
+Only the Python version changes: no `git pull`, no migrations, no `collectstatic`. Switching the image can break the
+current virtualenv, and the Python 3.13 one can only be built after the switch, so do this at a quiet time.
+
+1. Account page → "System image" tab → pencil icon → **innit**.
+2. Build the new virtualenv:
+
+   ```bash
+   rm -rf ~/.cache/pip
+   mkvirtualenv --python=python3.13 tanulmanyi313
+   pip install -r ~/tanulmanyi/requirements.txt
+   cd ~/tanulmanyi
+   python manage.py check
+   ```
+
+   If the name `tanulmanyi313` is already taken by a leftover virtualenv, remove it first with
+   `rmvirtualenv tanulmanyi313` or pick another name.
+3. On the Web tab set **Virtualenv** to `/home/bhfto/.virtualenvs/tanulmanyi313` and **Python version** to 3.13,
+   then press **Reload**.
+4. If scheduled or always-on tasks run this code, point them at `/home/bhfto/.virtualenvs/tanulmanyi313/bin/python`.
+5. Run the smoke test (step 5 of the Django upgrade section below) and check the error log.
+
+**Rollback:** innit also has Python 3.10. Build a 3.10 virtualenv
+(`mkvirtualenv --python=python3.10 tanulmanyi310b`, then `pip install -r ~/tanulmanyi/requirements.txt`), set it and
+Python 3.10 on the Web tab, and reload.
+
+**Afterwards:** delete the old virtualenvs (Python 3.10 and 3.8) with `rmvirtualenv <name>`.
+
+## One-time upgrade: Django 4.2 → 5.2 (done September 2026)
+
+Kept for reference; it ran on haggis with Python 3.10.
 
 Django 5.2 needs Python 3.10 or newer; the old virtualenv is most likely on Python 3.8 (the Web tab shows it). MySQL
 is already on version 8, which Django 5.2 requires. The database schema does not change: the new migrations produce no SQL.
