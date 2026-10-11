@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.db import models
 from szakdolgozat.models import Temakor, Temavezeto, TemavezetoTemakor, TemaStatusz, Tema, Hallgato, Statusz, Tagozat, Kepzes, HallgatoKepzes, ErdemJegy, HallgatoKepzesTema, Beallitas
 from tinymce.widgets import TinyMCE
 
@@ -89,6 +90,9 @@ class HallgatoKepzesAdmin(admin.ModelAdmin):
 
 
 class HallgatoKepzesTemaAdmin(admin.ModelAdmin):
+    # Links typed without a scheme get https:// (Django 6's default; 5.2 still assumes http://).
+    formfield_overrides = {models.URLField: {'assume_scheme': 'https'}}
+
     def get_readonly_fields(self, request, obj=None):
         if obj:
             return ["hallgato_kepzes", "tema"]

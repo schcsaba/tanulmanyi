@@ -3,7 +3,8 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from mintatanterv.models import TargyMunkarend
+from mintatanterv.models import Kovetelmeny, TargyMunkarend
+from szakdolgozat.models import HallgatoKepzesTema
 from tanulmanyi.testing import MintatantervAdatok, SzakdolgozatAdatok, create_users
 
 
@@ -70,3 +71,13 @@ class AdminTests(TestCase):
                                     follow=True)
         self.assertContains(response, '2 kurzus létszáma lett 20-ra állítva.')
         self.assertEqual({k.max_letszam for k in TargyMunkarend.objects.filter(pk__in=[k.pk for k in kurzusok])}, {20})
+
+    def test_elofeltetelek_kovetelmeny_szerint(self):
+        response = self.client.get(reverse('admin:mintatanterv_elofeltetel_changelist'),
+                                   {'targy__kovetelmeny__id__exact': Kovetelmeny.objects.first().pk})
+        self.assertEqual(response.status_code, 200)
+
+    def test_szakdolgozat_link_https(self):
+        modeladmin = admin.site._registry[HallgatoKepzesTema]
+        mezo = modeladmin.formfield_for_dbfield(HallgatoKepzesTema._meta.get_field('szakdolgozat_link'), request=None)
+        self.assertEqual(mezo.clean('example.org/sz.pdf'), 'https://example.org/sz.pdf')

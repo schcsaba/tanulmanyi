@@ -154,10 +154,10 @@ class ElofeltetelAdmin(admin.ModelAdmin):
         self.message_user(request, 'Beállítottad, hogy %s előfeltétel gyenge.' %rows_updated)
     gyenge.short_description = 'Annak beállítása, hogy a kiválasztott előfeltételek gyengék'
 
-    def lookup_allowed(self, lookup, *args, **kwargs):
+    def lookup_allowed(self, lookup, value, request=None):
         if lookup == 'targy__kovetelmeny__id__exact':
             return True
-        return super(ElofeltetelAdmin, self).lookup_allowed(lookup, *args, **kwargs)
+        return super().lookup_allowed(lookup, value, request)
 
 class ElofeltetelMintatantervbenAdmin(admin.ModelAdmin):
     list_display = ('targy', 'elofeltetel_targy', 'eros_elofeltetel')
