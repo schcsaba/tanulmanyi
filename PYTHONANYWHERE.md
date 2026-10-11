@@ -14,7 +14,8 @@ Before deploying, run the test suite locally with `make test`.
 | Settings / secrets | `/home/bhfto/tanulmanyi/.env` (read by `python-decouple`, never committed) |
 | Uploaded files (regulations, timetables) | `/home/bhfto/media/` |
 | Collected static files (admin, TinyMCE) | `/home/bhfto/tanulmanyi/static/` (generated, not in git) |
-| Virtualenv | `/home/bhfto/.virtualenvs/<name>` (set on the Web tab) |
+| System image / Python | **innit** (Ubuntu 22.04), Python 3.13 |
+| Virtualenv | `/home/bhfto/.virtualenvs/tanulmanyi313` (set on the Web tab) |
 | Database | MySQL 8, `bhfto$...` database; host and name on the Databases tab |
 | Logs | Web tab → "Log files" (error log, server log) |
 
@@ -43,7 +44,7 @@ Use this when `requirements.txt` has not changed.
 
 ```bash
 cd ~/tanulmanyi
-workon <virtualenv name>
+workon tanulmanyi313
 git pull
 python manage.py migrate
 python manage.py collectstatic --noinput
@@ -54,9 +55,9 @@ Then press **Reload** on the Web tab and check the error log.
 If `requirements.txt` changed, run `pip install -r requirements.txt` after `git pull` (inside the virtualenv),
 or for bigger upgrades build a fresh virtualenv as in the sections below.
 
-## Switching the system image: haggis → innit, Python 3.10 → 3.13 (October 2026)
+## Switching the system image: haggis → innit, Python 3.10 → 3.13 (done October 2026)
 
-The account is on the **haggis** system image (Ubuntu 20.04), whose newest Python is 3.10. Python 3.10 reaches end
+Kept for reference. The account was on the **haggis** system image (Ubuntu 20.04), whose newest Python is 3.10. Python 3.10 reaches end
 of life in October 2026, and Django 6 will need Python 3.12 or newer. The **innit** image (Ubuntu 22.04) offers
 Python 3.13, the version the Docker setup uses.
 
@@ -85,7 +86,7 @@ current virtualenv, and the Python 3.13 one can only be built after the switch, 
 (`mkvirtualenv --python=python3.10 tanulmanyi310b`, then `pip install -r ~/tanulmanyi/requirements.txt`), set it and
 Python 3.10 on the Web tab, and reload.
 
-**Afterwards:** delete the old virtualenvs (Python 3.10 and 3.8) with `rmvirtualenv <name>`.
+**Afterwards:** once the site has run fine for a few days, delete the old virtualenvs (Python 3.10 and 3.8) with `rmvirtualenv <name>`.
 
 ## One-time upgrade: Django 4.2 → 5.2 (done October 2026)
 
