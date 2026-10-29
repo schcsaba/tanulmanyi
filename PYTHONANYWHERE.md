@@ -18,6 +18,7 @@ Before deploying, run the test suite locally with `make test`.
 | Virtualenv | `/home/bhfto/.virtualenvs/tanulmanyi313` (set on the Web tab) |
 | Database | MySQL 8, `bhfto$...` database; host and name on the Databases tab |
 | Logs | Web tab → "Log files" (error log, server log) |
+| DNS and HTTPS in front of the site | Cloudflare, `bhf.hu` zone (see "Cloudflare" below) |
 
 ### `.env` keys
 
@@ -37,6 +38,24 @@ Before deploying, run the test suite locally with `make test`.
 - **Do not map `/media/`.** Uploaded files are served through the app, which checks who may download them
   (some regulations are for teachers only). A static mapping would let anyone download them without logging in.
 - **Virtualenv** and **Python version**: must match (see below).
+
+## Cloudflare
+
+Since October 2026 the `bhf.hu` DNS is on Cloudflare, and `tanulmanyi.bhf.hu` is proxied through it (orange cloud):
+visitors connect to Cloudflare, Cloudflare connects to PythonAnywhere.
+
+- **The `bhf.hu` zone's SSL/TLS mode is "Flexible"**, because the server behind `bhf.hu` does not work with "Full".
+- **A Configuration Rule switches `tanulmanyi.bhf.hu` to "Full":** Rules → "+ Create rule" → Configuration Rule;
+  condition Hostname equals `tanulmanyi.bhf.hu`; setting SSL = Full.
+- **Why the rule is needed:** with "Flexible", Cloudflare reaches PythonAnywhere over plain HTTP, PythonAnywhere's
+  "Force HTTPS" redirects to HTTPS, and the browser ends up in an endless redirect loop ("too many redirects").
+  Don't fix that by turning off Force HTTPS: the traffic between Cloudflare and PythonAnywhere would then be
+  unencrypted.
+- **To do:** PythonAnywhere has no certificate for `tanulmanyi.bhf.hu` yet; it presents its own
+  `*.eu.pythonanywhere.com` one. Create a Cloudflare Origin Certificate (SSL/TLS → Origin Server), install it on
+  the Web tab under "Security", reload, then change the rule's SSL setting from Full to **Strict**.
+
+If the site shows "too many redirects" again, check that the rule still exists and is enabled.
 
 ## Routine deployment (code changes only)
 
